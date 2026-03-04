@@ -463,11 +463,18 @@ def _resolve_file(file: str, data_dir: Path) -> Path:
     raise FileNotFoundError(f"MCAP file not found: {file} (searched in {data_dir})")
 
 
+def _normalize_iso(value: str) -> str:
+    """Replace trailing 'Z' with '+00:00' for Python 3.10 fromisoformat compat."""
+    if value.endswith("Z"):
+        return value[:-1] + "+00:00"
+    return value
+
+
 def _parse_datetime(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value)
+        return datetime.fromisoformat(_normalize_iso(value))
     except ValueError:
         return None
 
@@ -482,7 +489,7 @@ def _parse_time_to_ns(value: str | None) -> int | None:
     except ValueError:
         pass
     try:
-        dt = datetime.fromisoformat(value)
+        dt = datetime.fromisoformat(_normalize_iso(value))
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
         return int(dt.timestamp() * 1e9)
