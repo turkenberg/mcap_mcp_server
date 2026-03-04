@@ -1,31 +1,52 @@
 # mcap-mcp-server
 
-**A generic SQL query interface for MCAP robotics data via the Model Context Protocol.**
+**SQL query interface for MCAP robotics data via the Model Context Protocol.**
 
----
+```{mermaid}
+graph LR
+    Client["MCP Client<br/>(Cursor, Claude Desktop)"]
+    Server["mcap-mcp-server"]
+    DuckDB["DuckDB<br/>(in-process SQL)"]
+    Files["MCAP Files<br/>(any encoding)"]
 
-## Overview
+    Client -->|MCP protocol| Server
+    Server -->|register tables| DuckDB
+    Server -->|read & decode| Files
+    Client -->|SQL queries| DuckDB
+```
 
-`mcap-mcp-server` is an MCP server that exposes [MCAP](https://mcap.dev) recording files as queryable SQL tables using [DuckDB](https://duckdb.org). It allows any MCP-compatible client (Cursor, Claude Desktop, etc.) to:
+Point this server at a directory of MCAP files and query them with SQL. No database server, no ETL, no custom scripts.
 
-- **Discover** available MCAP recordings and their schemas
-- **Load** and decode messages from any encoding (Protobuf, JSON, ROS 1/2, CDR, FlatBuffers)
-- **Query** data with standard SQL — no custom DSL, no one-off scripts
-- **Compare** signals across multiple recording sessions
+## Current state
 
-Zero infrastructure required — point at a directory of MCAP files and go.
-
-## Status
-
-> **Draft** — Design phase. Not yet implemented. See the [spec](../specs/spec-mcap-mcp-server.md) for the full design.
-
-## Documentation
+| Component | Status |
+|-----------|--------|
+| Core server (list, load, query, schema) | Done |
+| Decoders (JSON, Protobuf, ROS1, ROS2, FlatBuffers) | Done |
+| Test suite (106 tests) | Passing |
+| Performance optimizations | Profiled, not yet implemented |
+| Distribution (PyPI, Docker) | Pending |
 
 ```{toctree}
 :maxdepth: 2
-:hidden:
+:caption: Architecture
 
-Specification <../specs/spec-mcap-mcp-server>
+architecture
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Interfaces
+
+tools
+decoders
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Configuration
+
+configuration
 ```
 
 ## Links
