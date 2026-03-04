@@ -8,37 +8,9 @@
 
 **Query your robot's [MCAP](https://mcap.dev) recordings with SQL — straight from your LLM.**
 
-Point Claude, Cursor, or any MCP client at your bag files. Ask questions in plain English. Get SQL-powered answers from DuckDB. No scripts, no pipelines, no BS.
+## Setup
 
-```
-MCAP files → mcap-mcp-server → DuckDB (in-memory) → SQL results → LLM
-```
-
-Supports **JSON, Protobuf, ROS 1, ROS 2, and FlatBuffers** out of the box.
-
-**[Full documentation](https://turkenberg.github.io/mcap_mcp_server/index.html)**
-
----
-
-## Install
-
-Requires [`uv`](https://docs.astral.sh/uv/getting-started/installation/) (the Python package runner). If you don't have it:
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-That's it — `uvx` handles the rest. No `pip install` needed.
-
-> **Manual install** (optional): `pip install mcap-mcp-server[all]`
-
-## Configure Your MCP Client
-
-Copy-paste the config below. That's it — no API keys, no setup, no database.
-
-### Cursor
-
-Add to `.cursor/mcp.json` in your project:
+Add to `.cursor/mcp.json` (or `claude_desktop_config.json` for Claude Desktop):
 
 ```json
 {
@@ -51,32 +23,22 @@ Add to `.cursor/mcp.json` in your project:
 }
 ```
 
-### Claude Desktop
+That's it. No install, no database, no API keys. Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
-Add to `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "mcap-query": {
-      "command": "uvx",
-      "args": ["mcap-mcp-server[all]"]
-    }
-  }
-}
-```
-
-### Windsurf / VS Code / Other MCP Clients
-
-Same JSON — check your client's docs for where to put it.
-
-> **Recordings outside the project?** Set `MCAP_DATA_DIR=/path/to/recordings` as an env var, or just give the LLM an absolute path — it handles that too.
+> **Recordings outside the project?** Set `MCAP_DATA_DIR=/path/to/recordings` as an env var, or just give the LLM an absolute path.
 
 ---
 
-## What Can It Do?
+## Usage
 
-Once configured, just talk to your LLM. It has 6 tools:
+Just talk to your LLM:
+
+- *"List all my recordings and show me what topics are in session_003.mcap"*
+- *"Load the battery data and find all moments where voltage dropped below 22V"*
+- *"Correlate IMU acceleration with motor current using an ASOF JOIN"*
+- *"Compare average battery voltage across my last 5 runs"*
+
+### Tools
 
 | Tool | What it does |
 |------|-------------|
@@ -86,15 +48,6 @@ Once configured, just talk to your LLM. It has 6 tools:
 | `load_recording` | Decode MCAP data into DuckDB |
 | `query` | Run SQL (full DuckDB — including ASOF JOIN) |
 | `get_statistics` | Quick stats (min/max/mean/std) for numeric fields |
-
-### Example Prompts
-
-Just ask your LLM:
-
-- *"List all my recordings and show me what topics are in session_003.mcap"*
-- *"Load the battery data and find all moments where voltage dropped below 22V"*
-- *"Correlate IMU acceleration with motor current using an ASOF JOIN"*
-- *"Compare average battery voltage across my last 5 runs"*
 
 ### Example SQL (under the hood)
 
@@ -118,14 +71,16 @@ SELECT 'run2', AVG(voltage) FROM r2_battery
 
 ## Supported Encodings
 
-| Encoding | Install |
-|----------|---------|
+| Encoding | Install extra |
+|----------|--------------|
 | JSON | Built-in |
-| Protobuf | `pip install mcap-mcp-server[protobuf]` |
-| ROS 1 | `pip install mcap-mcp-server[ros1]` |
-| ROS 2 (CDR) | `pip install mcap-mcp-server[ros2]` |
-| FlatBuffers | `pip install mcap-mcp-server[flatbuffers]` |
-| All | `pip install mcap-mcp-server[all]` |
+| Protobuf | `[protobuf]` |
+| ROS 1 | `[ros1]` |
+| ROS 2 (CDR) | `[ros2]` |
+| FlatBuffers | `[flatbuffers]` |
+| All | `[all]` |
+
+> The config above uses `[all]`. For pip: `pip install mcap-mcp-server[all]`
 
 ## Configuration (Optional)
 
@@ -161,6 +116,8 @@ git submodule update --init
 pip install -e ".[dev]"
 pytest
 ```
+
+**[Full documentation](https://turkenberg.github.io/mcap_mcp_server/index.html)**
 
 ## License
 
