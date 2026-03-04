@@ -1,18 +1,18 @@
 """Tests for the Protobuf decoder."""
 
-import importlib.util
-
 import pytest
 
-PROTOBUF_AVAILABLE = importlib.util.find_spec("google.protobuf") is not None
-
-if PROTOBUF_AVAILABLE:
+try:
     from google.protobuf.descriptor_pb2 import (
         DescriptorProto,
         FieldDescriptorProto,
         FileDescriptorProto,
         FileDescriptorSet,
     )
+
+    PROTOBUF_AVAILABLE = True
+except ImportError:
+    PROTOBUF_AVAILABLE = False
 
 pytestmark = pytest.mark.skipif(not PROTOBUF_AVAILABLE, reason="protobuf not installed")
 

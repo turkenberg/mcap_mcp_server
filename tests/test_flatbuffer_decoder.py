@@ -1,12 +1,16 @@
 """Tests for the FlatBuffer decoder."""
 
-import importlib.util
 import os
 import struct
 
 import pytest
 
-FLATBUFFERS_AVAILABLE = importlib.util.find_spec("flatbuffers") is not None
+try:
+    import flatbuffers  # noqa: F401
+
+    FLATBUFFERS_AVAILABLE = True
+except ImportError:
+    FLATBUFFERS_AVAILABLE = False
 
 pytestmark = pytest.mark.skipif(not FLATBUFFERS_AVAILABLE, reason="flatbuffers not installed")
 

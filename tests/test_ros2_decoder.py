@@ -1,11 +1,15 @@
 """Tests for the ROS 2 decoder."""
 
-import importlib.util
 from types import SimpleNamespace
 
 import pytest
 
-ROS2_AVAILABLE = importlib.util.find_spec("mcap_ros2") is not None
+try:
+    import mcap_ros2  # noqa: F401
+
+    ROS2_AVAILABLE = True
+except ImportError:
+    ROS2_AVAILABLE = False
 
 pytestmark = pytest.mark.skipif(not ROS2_AVAILABLE, reason="mcap-ros2-support not installed")
 
