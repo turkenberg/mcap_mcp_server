@@ -50,6 +50,12 @@ dev = [
     "ruff>=0.4.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/turkenberg/mcap_mcp_server"
+Repository = "https://github.com/turkenberg/mcap_mcp_server"
+Issues = "https://github.com/turkenberg/mcap_mcp_server/issues"
+Documentation = "https://github.com/turkenberg/mcap_mcp_server#readme"
+
 [project.scripts]
 mcap-mcp-server = "mcap_mcp_server.__main__:main"
 
@@ -62,6 +68,17 @@ flatbuffer = "mcap_mcp_server.decoders.flatbuffer_decoder:FlatBufferDecoder"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcap_mcp_server"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "third_party/",
+    "doc/build/",
+    "tests/fixtures/",
+    "usecases/",
+    ".coverage",
+    ".DS_Store",
+    ".pytest_cache/",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
