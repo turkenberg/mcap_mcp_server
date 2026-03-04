@@ -92,14 +92,14 @@ No such tool exists today. MCAP + MCP + DuckDB is a natural combination that fil
 ┌──────────────────────────▼────────────────────────────────────────┐
 │                     MCP Server Layer                               │
 │                                                                    │
-│  Tools:                          Resources:                        │
-│  ┌─────────────────┐             ┌──────────────────────┐         │
-│  │ list_recordings  │             │ mcap://recordings     │         │
-│  │ get_recording_info│            │ mcap://schema/{file}  │         │
-│  │ get_schema       │             └──────────────────────┘         │
-│  │ load_recording   │                                              │
-│  │ query            │                                              │
-│  └─────────────────┘                                              │
+│  Tools:                                                            │
+│  ┌─────────────────┐                                               │
+│  │ list_recordings  │                                               │
+│  │ get_recording_info│                                              │
+│  │ get_schema       │                                               │
+│  │ load_recording   │                                               │
+│  │ query            │                                               │
+│  └─────────────────┘                                               │
 └──────────────────────────┬────────────────────────────────────────┘
                            │
 ┌──────────────────────────▼────────────────────────────────────────┐
@@ -574,18 +574,7 @@ robotics data where topics are often logged at different frequencies.
 
 ---
 
-## 6. MCP Resources
-
-Read-only MCP resources for client-side browsing:
-
-| URI Pattern | Description |
-|-------------|-------------|
-| `mcap://recordings` | JSON index of all available recordings |
-| `mcap://schema/{filename}` | Full schema for a specific recording |
-
----
-
-## 7. Pluggable Decoder Architecture
+## 6. Pluggable Decoder Architecture
 
 The server must handle any MCAP message encoding. This is achieved via a decoder registry:
 
@@ -654,9 +643,9 @@ The server discovers and loads all registered decoders at startup.
 
 ---
 
-## 8. MCAP Reading Strategy
+## 7. MCAP Reading Strategy
 
-### 8.1 Summary-Only Access (Fast Path)
+### 7.1 Summary-Only Access (Fast Path)
 
 For `list_recordings`, `get_recording_info`, and `get_schema`:
 
@@ -664,7 +653,7 @@ For `list_recordings`, `get_recording_info`, and `get_schema`:
 - Returns metadata, schemas, channels, and statistics without scanning messages.
 - For a 1 GB file, this takes <100ms.
 
-### 8.2 Indexed Message Iteration (Data Loading)
+### 7.2 Indexed Message Iteration (Data Loading)
 
 For `load_recording`:
 
@@ -673,7 +662,7 @@ For `load_recording`:
 - Avoids reading chunks outside the requested time window or topic set.
 - Messages are decoded in a streaming fashion and accumulated into per-column arrays.
 
-### 8.3 Batch Decode Optimization
+### 7.3 Batch Decode Optimization
 
 Instead of creating Python dicts per message (slow), accumulate values into per-field lists
 or numpy arrays, then construct DataFrames in one pass:
@@ -691,7 +680,7 @@ for schema, channel, message in reader.iter_messages(topics=[topic]):
 df = pd.DataFrame(columns)
 ```
 
-### 8.4 Nested Message Flattening
+### 7.4 Nested Message Flattening
 
 For encodings with nested messages (Protobuf, ROS), fields are flattened:
 
@@ -705,9 +694,9 @@ Flattening depth is configurable (default: 3). Deeper nesting is serialized as J
 
 ---
 
-## 9. Performance Considerations
+## 8. Performance Considerations
 
-### 9.1 Expected Performance
+### 8.1 Expected Performance
 
 | Scenario | File size | Messages | Expected load time |
 |----------|----------|----------|--------------------|
@@ -716,7 +705,7 @@ Flattening depth is configurable (default: 3). Deeper nesting is serialized as J
 | Long session | 500 MB | ~250K | 8-15s |
 | Maximum expected | 1 GB | ~500K | 15-30s |
 
-### 9.2 Memory Budget
+### 8.2 Memory Budget
 
 Rule of thumb: in-memory DataFrame ≈ 2-4x compressed MCAP size.
 
@@ -726,7 +715,7 @@ Rule of thumb: in-memory DataFrame ≈ 2-4x compressed MCAP size.
 | 200 MB | 400-800 MB |
 | 1 GB | 2-4 GB |
 
-### 9.3 Mitigation Strategies for Large Files
+### 8.3 Mitigation Strategies for Large Files
 
 1. **Topic filtering**: Only decode topics the user requests.
 2. **Time-range filtering**: Use MCAP chunk indexes to skip irrelevant windows.
@@ -734,7 +723,7 @@ Rule of thumb: in-memory DataFrame ≈ 2-4x compressed MCAP size.
 4. **LRU cache**: Evict oldest recordings when memory limit is reached (default: 2 GB).
 5. **Columnar batch decode**: Avoid per-message Python object overhead.
 
-### 9.4 Performance Benchmarks (Required Before v1 Release)
+### 8.4 Performance Benchmarks (Required Before v1 Release)
 
 - [ ] `list_recordings` latency with 10, 100, 1000 files
 - [ ] `load_recording` latency and memory for 10 MB, 200 MB, 500 MB, 1 GB files
@@ -744,9 +733,9 @@ Rule of thumb: in-memory DataFrame ≈ 2-4x compressed MCAP size.
 
 ---
 
-## 10. Configuration
+## 9. Configuration
 
-### 10.1 Environment Variables
+### 9.1 Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -761,7 +750,7 @@ Rule of thumb: in-memory DataFrame ≈ 2-4x compressed MCAP size.
 | `MCAP_SSE_PORT` | `8080` | Port for SSE transport |
 | `MCAP_FLATTEN_DEPTH` | `3` | Max nesting depth for message flattening |
 
-### 10.2 Config File (Optional)
+### 9.2 Config File (Optional)
 
 `mcap-mcp-server.toml`:
 
@@ -788,9 +777,9 @@ Environment variables override config file values.
 
 ---
 
-## 11. Distribution
+## 10. Distribution
 
-### 11.1 Primary: PyPI Package
+### 10.1 Primary: PyPI Package
 
 ```bash
 pip install mcap-mcp-server
@@ -829,7 +818,7 @@ uvx mcap-mcp-server --data-dir /path/to/data
 
 **Advantages**: Standard MCP pattern. No Docker. Direct file access. Simple setup.
 
-### 11.2 Secondary: Docker Image
+### 10.2 Secondary: Docker Image
 
 ```bash
 docker run -d \
@@ -854,7 +843,7 @@ docker run -d \
 
 **Advantages**: Isolation, deployable on shared infrastructure, read-only volume mount.
 
-### 11.3 Recommendation by Use Case
+### 10.3 Recommendation by Use Case
 
 | Use case | Recommendation |
 |----------|---------------|
@@ -866,7 +855,7 @@ docker run -d \
 
 ---
 
-## 12. Package Structure
+## 11. Package Structure
 
 ```
 mcap-mcp-server/
@@ -908,7 +897,7 @@ mcap-mcp-server/
 
 ---
 
-## 13. Dependencies
+## 12. Dependencies
 
 ### Required
 
@@ -938,7 +927,7 @@ mcap-mcp-server/
 
 ---
 
-## 14. Security
+## 13. Security
 
 ### Read-Only Enforcement
 
@@ -959,7 +948,7 @@ mcap-mcp-server/
 
 ---
 
-## 15. Future Extensions (Post-v1)
+## 14. Future Extensions (Post-v1)
 
 | Extension | Phase | Description |
 |-----------|-------|-------------|
@@ -974,7 +963,7 @@ mcap-mcp-server/
 
 ---
 
-## 16. Open Questions
+## 15. Open Questions
 
 1. **Package name**: `mcap-mcp-server` vs `mcap-query-mcp` vs `mcap-duckdb-mcp`?
    Prefer `mcap-mcp-server` for discoverability.
@@ -999,7 +988,7 @@ mcap-mcp-server/
 
 ---
 
-## 17. Implementation Plan
+## 16. Implementation Plan
 
 ### Phase 1: Core — done
 
@@ -1023,7 +1012,6 @@ mcap-mcp-server/
 ### Phase 2: Polish — pending
 
 - [ ] `get_recording_info` tool
-- [ ] MCP resources
 - [ ] Memory management (LRU cache)
 - [ ] Multi-recording loading with aliases
 - [ ] Downsampling support
@@ -1043,7 +1031,7 @@ mcap-mcp-server/
 
 ---
 
-## 18. Success Criteria
+## 17. Success Criteria
 
 1. An engineer or LLM can go from "what MCAP files do I have?" to "here's the SQL result"
    in under 60 seconds using only MCP tool calls.

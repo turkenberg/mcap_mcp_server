@@ -313,53 +313,6 @@ def create_server(config: ServerConfig) -> FastMCP:
             result = {"error": str(e)}
         return json.dumps(result, default=_json_default, indent=2)
 
-    # ------------------------------------------------------------------
-    # Resources
-    # ------------------------------------------------------------------
-
-    @mcp.resource(
-        "mcap://recordings",
-        name="recordings",
-        description="JSON index of all available MCAP recordings",
-        mime_type="application/json",
-    )
-    def resource_recordings() -> str:
-        summaries = index.scan(config.data_dir)
-        return json.dumps(index.to_json(summaries), indent=2)
-
-    @mcp.resource(
-        "mcap://schema/{filename}",
-        name="schema",
-        description="Full SQL schema for a specific MCAP recording",
-        mime_type="application/json",
-    )
-    def resource_schema(filename: str) -> str:
-        file_path = _resolve_file(filename, config.data_dir)
-        topics_info = get_schema_info(file_path, registry)
-        result: dict[str, Any] = {
-            "file": Path(file_path).name,
-            "topics": {},
-            "metadata_table": "_metadata",
-            "sql_hint": (
-                "Tables are named from topics: strip leading '/', replace '/' "
-                "with '_'. All tables have a 'timestamp_us' column (BIGINT, "
-                "microseconds). Use it for JOINs across topics. DuckDB supports "
-                "ASOF JOIN for time-series with different sample rates."
-            ),
-        }
-        for topic_name, schema in topics_info.items():
-            result["topics"][topic_name] = {
-                "table_name": schema.table_name,
-                "message_count": schema.message_count,
-                "schema_name": schema.schema_name,
-                "message_encoding": schema.message_encoding,
-                "fields": [
-                    {"name": f.name, "type": f.type, "description": f.description}
-                    for f in schema.fields
-                ],
-            }
-        return json.dumps(result, indent=2)
-
     return mcp
 
 

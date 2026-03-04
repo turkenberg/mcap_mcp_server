@@ -24,16 +24,6 @@ def _get_tool_fn(server, name: str):
     raise ValueError(f"Tool {name!r} not found")
 
 
-def _get_resource_fn(server, uri_prefix: str):
-    for res in server._resource_manager._resources.values():
-        if uri_prefix in str(res.uri):
-            return res.fn
-    for tmpl in server._resource_manager._templates.values():
-        if uri_prefix in str(tmpl.uri_template):
-            return tmpl.fn
-    raise ValueError(f"Resource matching {uri_prefix!r} not found")
-
-
 # ---- get_recording_info ----
 
 class TestGetRecordingInfo:
@@ -108,26 +98,6 @@ class TestLoadRecordingExtras:
         result = json.loads(load_fn(file="session_001.mcap"))
         assert result["skipped_reason"] is None
         assert result["skipped_topics"] == []
-
-
-# ---- schema resource ----
-
-class TestSchemaResource:
-    def test_schema_resource_returns_data(self, mcp_server):
-        fn = _get_resource_fn(mcp_server, "schema")
-        result = json.loads(fn(filename="session_001.mcap"))
-        assert "/battery" in result["topics"]
-        assert result["metadata_table"] == "_metadata"
-        assert "sql_hint" in result
-
-    def test_schema_resource_field_info(self, mcp_server):
-        fn = _get_resource_fn(mcp_server, "schema")
-        result = json.loads(fn(filename="session_002.mcap"))
-        assert "/imu" in result["topics"]
-        imu = result["topics"]["/imu"]
-        assert imu["table_name"] == "imu"
-        field_names = {f["name"] for f in imu["fields"]}
-        assert "timestamp_us" in field_names
 
 
 # ---- query format ----
