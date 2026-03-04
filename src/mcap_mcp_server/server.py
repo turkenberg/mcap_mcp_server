@@ -12,6 +12,7 @@ from typing import Any
 import pandas as pd
 from mcp.server.fastmcp import FastMCP
 
+from mcap_mcp_server import __version__
 from mcap_mcp_server.config import ServerConfig
 from mcap_mcp_server.decoder_registry import DecoderRegistry
 from mcap_mcp_server.mcap_reader import (
@@ -311,6 +312,22 @@ def create_server(config: ServerConfig) -> FastMCP:
         except ValueError as e:
             result = {"error": str(e)}
         return json.dumps(result, default=_json_default, indent=2)
+
+    @mcp.tool(
+        name="get_version",
+        description=(
+            "Return the server version, supported encodings, and upgrade command. "
+            "Use this to check for updates or diagnose compatibility issues."
+        ),
+    )
+    def get_version() -> str:
+        """Return version info and available decoders."""
+        result = {
+            "version": __version__,
+            "decoders": registry.available_encodings,
+            "upgrade": "uvx mcap-mcp-server[all] --upgrade",
+        }
+        return json.dumps(result, indent=2)
 
     return mcp
 

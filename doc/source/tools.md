@@ -1,6 +1,6 @@
 # MCP Tools
 
-Five tools are exposed via the Model Context Protocol. Typical workflow: `list_recordings` → `get_schema` → `load_recording` → `query`.
+Six tools are exposed via the Model Context Protocol. Typical workflow: `list_recordings` → `get_schema` → `load_recording` → `query`.
 
 ## list_recordings
 
@@ -66,3 +66,17 @@ Execute SQL against loaded data. Full DuckDB SQL is supported, including `ASOF J
 | `limit` | integer | No | Override row limit (default: 1000, max: 10000) |
 
 Returns columns, types, rows, row count, truncation flag, and execution time.
+
+## get_version
+
+Return the server version, list of available decoders, and the upgrade command.
+
+No parameters. Returns:
+
+```json
+{
+  "version": "0.4.0",
+  "decoders": ["JsonDecoder", "ProtobufDecoder", "Ros1Decoder", "Ros2Decoder", "FlatBufferDecoder"],
+  "upgrade": "uvx mcap-mcp-server[all] --upgrade"
+}
+```

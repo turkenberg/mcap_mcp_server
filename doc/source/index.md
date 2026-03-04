@@ -57,6 +57,7 @@ That's it. Point your LLM at MCAP files and ask questions.
 | `get_schema` | Table names, column names & DuckDB types |
 | `load_recording` | Decode + register as DuckDB tables |
 | `query` | Execute SQL (full DuckDB dialect) |
+| `get_version` | Server version, decoders, upgrade command |
 
 ## Supported Encodings
 

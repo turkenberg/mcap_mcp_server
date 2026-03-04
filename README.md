@@ -25,6 +25,8 @@ Add to `.cursor/mcp.json` (or `claude_desktop_config.json` for Claude Desktop):
 
 That's it. No install, no database, no API keys. Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
+> **Upgrade:** `uvx mcap-mcp-server[all] --upgrade` — or just ask your LLM *"what version of mcap-mcp-server am I running?"*
+
 > **Recordings outside the project?** Set `MCAP_DATA_DIR=/path/to/recordings` as an env var, or just give the LLM an absolute path.
 
 ---
@@ -47,6 +49,7 @@ Just talk to your LLM:
 | `get_schema` | SQL table names & column types — for query planning |
 | `load_recording` | Decode MCAP data into DuckDB |
 | `query` | Run SQL (full DuckDB — including ASOF JOIN) |
+| `get_version` | Server version, available decoders, upgrade command |
 
 ### Example SQL (under the hood)
 

@@ -24,6 +24,31 @@ def _get_tool_fn(server, name: str):
     raise ValueError(f"Tool {name!r} not found")
 
 
+# ---- get_version ----
+
+class TestGetVersion:
+    def test_returns_version(self, mcp_server):
+        fn = _get_tool_fn(mcp_server, "get_version")
+        result = json.loads(fn())
+        assert "version" in result
+        assert isinstance(result["version"], str)
+        assert "." in result["version"]
+
+    def test_returns_decoders(self, mcp_server):
+        fn = _get_tool_fn(mcp_server, "get_version")
+        result = json.loads(fn())
+        assert "decoders" in result
+        assert isinstance(result["decoders"], list)
+        assert len(result["decoders"]) >= 1
+        assert "JsonDecoder" in result["decoders"]
+
+    def test_returns_upgrade_command(self, mcp_server):
+        fn = _get_tool_fn(mcp_server, "get_version")
+        result = json.loads(fn())
+        assert "upgrade" in result
+        assert "mcap-mcp-server" in result["upgrade"]
+
+
 # ---- get_recording_info ----
 
 class TestGetRecordingInfo:
