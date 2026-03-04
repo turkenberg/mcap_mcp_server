@@ -59,7 +59,9 @@ def create_server(config: ServerConfig) -> FastMCP:
         description=(
             "Discover available MCAP recording files. Returns file names, sizes, "
             "durations, channel lists, and message counts. Use this first to see "
-            "what data is available before loading."
+            "what data is available before loading. "
+            "By default scans the project directory; pass an absolute 'path' to "
+            "scan any directory on the filesystem."
         ),
     )
     def list_recordings(

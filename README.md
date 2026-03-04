@@ -27,10 +27,13 @@ Works with **Cursor**, **Claude Desktop**, or any MCP-compatible client.
 pip install mcap-mcp-server
 
 # Or zero-install via uvx
-uvx mcap-mcp-server --data-dir /path/to/recordings
+uvx mcap-mcp-server
 ```
 
 ## MCP Client Configuration
+
+No configuration required — the server scans the project directory by default.
+All tools also accept absolute paths, so the LLM can reach any MCAP file on your system.
 
 ### Cursor (`.cursor/mcp.json`)
 
@@ -39,10 +42,7 @@ uvx mcap-mcp-server --data-dir /path/to/recordings
   "mcpServers": {
     "mcap-query": {
       "command": "uvx",
-      "args": ["mcap-mcp-server"],
-      "env": {
-        "MCAP_DATA_DIR": "/path/to/recordings"
-      }
+      "args": ["mcap-mcp-server"]
     }
   }
 }
@@ -55,23 +55,24 @@ uvx mcap-mcp-server --data-dir /path/to/recordings
   "mcpServers": {
     "mcap-query": {
       "command": "uvx",
-      "args": ["mcap-mcp-server"],
-      "env": {
-        "MCAP_DATA_DIR": "/path/to/recordings"
-      }
+      "args": ["mcap-mcp-server"]
     }
   }
 }
 ```
 
+> **Tip:** Set `MCAP_DATA_DIR` only if your recordings live outside the project directory (e.g. a shared NAS or `/data/recordings`).
+
 ## Available Tools
 
 | Tool | Description |
 |------|-------------|
-| `list_recordings` | Discover MCAP files: names, sizes, durations, channels |
+| `list_recordings` | Discover MCAP files in the project (or any directory via `path`) |
+| `get_recording_info` | Full metadata, channels, and attachments for a specific file |
 | `get_schema` | Inspect SQL table names, column names and types for query planning |
 | `load_recording` | Decode MCAP data and load into DuckDB for SQL querying |
 | `query` | Execute SQL against loaded data (full DuckDB SQL including ASOF JOIN) |
+| `get_statistics` | Summary stats (min, max, mean, std) for numeric fields of a topic |
 
 ## Typical Workflow
 
