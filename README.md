@@ -47,7 +47,6 @@ Just talk to your LLM:
 | `get_schema` | SQL table names & column types — for query planning |
 | `load_recording` | Decode MCAP data into DuckDB |
 | `query` | Run SQL (full DuckDB — including ASOF JOIN) |
-| `get_statistics` | Quick stats (min/max/mean/std) for numeric fields |
 
 ### Example SQL (under the hood)
 

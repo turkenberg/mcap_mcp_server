@@ -1,4 +1,4 @@
-"""Tests for new MCP tools: get_recording_info, get_statistics, schema resource, and helpers."""
+"""Tests for MCP tools: get_recording_info, and server helpers."""
 
 import decimal
 import json
@@ -74,53 +74,6 @@ class TestGetRecordingInfo:
         fn = _get_tool_fn(mcp_server, "get_recording_info")
         with pytest.raises(FileNotFoundError):
             fn(file="nonexistent.mcap")
-
-
-# ---- get_statistics ----
-
-class TestGetStatistics:
-    def test_auto_discovers_numeric_fields(self, mcp_server):
-        load_fn = _get_tool_fn(mcp_server, "load_recording")
-        load_fn(file="session_001.mcap")
-
-        stats_fn = _get_tool_fn(mcp_server, "get_statistics")
-        result = json.loads(stats_fn(file="session_001.mcap", topic="/battery"))
-        assert result["topic"] == "/battery"
-        assert result["message_count"] == 100
-        assert result["duration_s"] > 0
-        for field_name in ("voltage", "current", "percentage"):
-            assert field_name in result["fields"]
-            assert "min" in result["fields"][field_name]
-            assert "max" in result["fields"][field_name]
-            assert "mean" in result["fields"][field_name]
-            assert "std" in result["fields"][field_name]
-
-    def test_specific_fields(self, mcp_server):
-        load_fn = _get_tool_fn(mcp_server, "load_recording")
-        load_fn(file="session_001.mcap")
-
-        stats_fn = _get_tool_fn(mcp_server, "get_statistics")
-        result = json.loads(stats_fn(
-            file="session_001.mcap", topic="/battery", fields=["voltage"]
-        ))
-        assert "voltage" in result["fields"]
-        assert "current" not in result["fields"]
-
-    def test_statistics_values_sensible(self, mcp_server):
-        load_fn = _get_tool_fn(mcp_server, "load_recording")
-        load_fn(file="session_001.mcap")
-
-        stats_fn = _get_tool_fn(mcp_server, "get_statistics")
-        result = json.loads(stats_fn(file="session_001.mcap", topic="/battery"))
-        v = result["fields"]["voltage"]
-        assert v["min"] <= v["mean"] <= v["max"]
-        assert v["std"] >= 0
-
-    def test_not_loaded_error(self, mcp_server):
-        stats_fn = _get_tool_fn(mcp_server, "get_statistics")
-        result = json.loads(stats_fn(file="session_001.mcap", topic="/battery"))
-        assert "error" in result
-        assert "not loaded" in result["error"]
 
 
 # ---- load_recording extras ----

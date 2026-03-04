@@ -6,7 +6,7 @@
 
 ## Status
 
-**Phase 1 complete** — Core server, all decoders (JSON, Protobuf, ROS1, ROS2, FlatBuffers), query engine, and test suite implemented. Phase 2 items (get_statistics, memory management, SSE transport) pending.
+**Phase 1 complete** — Core server, all decoders (JSON, Protobuf, ROS1, ROS2, FlatBuffers), query engine, and test suite implemented. Phase 2 items (memory management, SSE transport) pending.
 
 ## Date
 
@@ -99,7 +99,6 @@ No such tool exists today. MCAP + MCP + DuckDB is a natural combination that fil
 │  │ get_schema       │             └──────────────────────┘         │
 │  │ load_recording   │                                              │
 │  │ query            │                                              │
-│  │ get_statistics   │                                              │
 │  └─────────────────┘                                              │
 └──────────────────────────┬────────────────────────────────────────┘
                            │
@@ -573,34 +572,6 @@ robotics data where topics are often logged at different frequencies.
 - Query timeout: configurable, default 30 seconds.
 - Result row limit: configurable, default 1000, max 10000.
 
-### 5.6 `get_statistics`
-
-**Purpose:** Get summary statistics for fields without writing SQL. Convenience shortcut.
-
-**Parameters:**
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `file` | string | Yes | Filename or full path to the MCAP file. |
-| `topic` | string | Yes | Topic to get statistics for. |
-| `fields` | string[] | No | Specific fields. Defaults to all numeric fields. |
-
-**Returns:** Per-field statistics.
-
-```json
-{
-  "file": "session_2026-01-15_001.mcap",
-  "topic": "/battery",
-  "message_count": 92000,
-  "duration_s": 1842.5,
-  "fields": {
-    "voltage": {"min": 21.2, "max": 25.8, "mean": 24.1, "std": 0.82},
-    "current": {"min": -5.2, "max": 0.1, "mean": -2.3, "std": 1.1},
-    "percentage": {"min": 0.12, "max": 1.0, "mean": 0.74, "std": 0.18}
-  }
-}
-```
-
 ---
 
 ## 6. MCP Resources
@@ -1051,7 +1022,7 @@ mcap-mcp-server/
 
 ### Phase 2: Polish — pending
 
-- [ ] `get_recording_info` and `get_statistics` tools
+- [ ] `get_recording_info` tool
 - [ ] MCP resources
 - [ ] Memory management (LRU cache)
 - [ ] Multi-recording loading with aliases

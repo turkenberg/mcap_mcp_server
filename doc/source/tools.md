@@ -1,6 +1,6 @@
 # MCP Tools
 
-Four tools are exposed via the Model Context Protocol. Typical workflow: `list_recordings` → `get_schema` → `load_recording` → `query`.
+Five tools are exposed via the Model Context Protocol. Typical workflow: `list_recordings` → `get_schema` → `load_recording` → `query`.
 
 ## list_recordings
 
