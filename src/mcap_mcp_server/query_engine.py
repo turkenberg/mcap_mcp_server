@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import concurrent.futures
 import logging
 import time
+from collections import OrderedDict
 from typing import Any
 
 import duckdb
@@ -30,6 +32,10 @@ _BLOCKED_KEYWORDS = [
 ]
 
 
+class _QueryTimeout(Exception):
+    """Raised internally when a query exceeds the configured timeout."""
+
+
 class QueryEngine:
     """In-memory DuckDB engine for querying DataFrames registered as virtual tables."""
 
@@ -38,12 +44,17 @@ class QueryEngine:
         query_timeout_s: int = 30,
         default_row_limit: int = 1000,
         max_row_limit: int = 10000,
+        max_memory_mb: int = 2048,
     ) -> None:
         self._conn = duckdb.connect(database=":memory:")
         self._query_timeout_s = query_timeout_s
         self._default_row_limit = default_row_limit
         self._max_row_limit = max_row_limit
+        self._max_memory_bytes = max_memory_mb * 1024 * 1024
         self._tables: dict[str, int] = {}  # table_name -> row_count
+        self._table_memory: dict[str, int] = {}  # table_name -> bytes
+        # group -> list of table names, ordered by insertion time (LRU)
+        self._groups: OrderedDict[str, list[str]] = OrderedDict()
         self._configure_safety()
 
     def _configure_safety(self) -> None:
@@ -57,20 +68,59 @@ class QueryEngine:
         except duckdb.Error:
             pass
 
-    def register_dataframe(self, name: str, df: pd.DataFrame) -> int:
+    def register_dataframe(
+        self, name: str, df: pd.DataFrame, group: str = "_default"
+    ) -> int:
         """Register a pandas DataFrame as a queryable DuckDB table.
 
-        Returns the number of rows registered.
+        *group* ties tables together for LRU eviction (typically the
+        recording alias or filename).  Returns the number of rows registered.
         """
+        mem = int(df.memory_usage(deep=True).sum())
+        self._evict_if_needed(mem)
+
         self._conn.register(name, df)
         row_count = len(df)
         self._tables[name] = row_count
+        self._table_memory[name] = mem
+
+        if group not in self._groups:
+            self._groups[group] = []
+        self._groups[group].append(name)
+        self._groups.move_to_end(group)
+
         logger.info("Registered table %r (%d rows, %d cols)", name, row_count, len(df.columns))
         return row_count
 
+    @property
+    def total_memory_bytes(self) -> int:
+        return sum(self._table_memory.values())
+
+    def _evict_if_needed(self, incoming_bytes: int) -> None:
+        """Evict oldest groups until there is room for *incoming_bytes*."""
+        while (
+            self._groups
+            and self.total_memory_bytes + incoming_bytes > self._max_memory_bytes
+        ):
+            oldest_group, tables = self._groups.popitem(last=False)
+            for t in list(tables):
+                self._do_unregister(t)
+            logger.info("LRU-evicted group %r (%d tables)", oldest_group, len(tables))
+
     def unregister(self, name: str) -> None:
-        self._conn.unregister(name)
+        self._do_unregister(name)
+        for group, tables in self._groups.items():
+            if name in tables:
+                tables.remove(name)
+                break
+
+    def _do_unregister(self, name: str) -> None:
+        try:
+            self._conn.unregister(name)
+        except duckdb.Error:
+            pass
         self._tables.pop(name, None)
+        self._table_memory.pop(name, None)
 
     def drop_tables_with_prefix(self, prefix: str) -> list[str]:
         """Remove all tables whose names start with *prefix*."""
@@ -107,9 +157,12 @@ class QueryEngine:
 
         start = time.monotonic()
         try:
-            result = self._conn.execute(limited_sql)
-            description = result.description
-            rows = result.fetchall()
+            description, rows = self._execute_with_timeout(limited_sql)
+        except _QueryTimeout:
+            return {
+                "error": f"Query timed out after {self._query_timeout_s}s",
+                "execution_time_ms": _elapsed_ms(start),
+            }
         except duckdb.Error as e:
             return {"error": str(e), "execution_time_ms": _elapsed_ms(start)}
 
@@ -134,6 +187,21 @@ class QueryEngine:
                 "truncated": truncated,
                 "execution_time_ms": elapsed,
             }
+
+    def _execute_with_timeout(self, sql: str) -> tuple[list, list]:
+        """Run a SQL statement with a timeout, interrupting DuckDB if exceeded."""
+
+        def _run() -> tuple[list, list]:
+            result = self._conn.execute(sql)
+            return result.description, result.fetchall()
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(_run)
+            try:
+                return future.result(timeout=self._query_timeout_s)
+            except concurrent.futures.TimeoutError:
+                self._conn.interrupt()
+                raise _QueryTimeout
 
     def _check_sql_safety(self, sql: str) -> None:
         upper = sql.upper()
