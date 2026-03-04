@@ -8,6 +8,8 @@ from pathlib import Path
 import pytest
 from mcap.writer import Writer
 
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
+
 
 @pytest.fixture
 def tmp_mcap_dir(tmp_path: Path) -> Path:
@@ -30,6 +32,22 @@ def multi_topic_mcap(tmp_path: Path) -> Path:
     """Multi-topic JSON MCAP file."""
     p = tmp_path / "multi.mcap"
     create_multi_topic_mcap(p)
+    return p
+
+
+@pytest.fixture
+def fixture_simple_mcap() -> Path:
+    """Pre-generated simple.mcap from tests/fixtures/."""
+    p = FIXTURES_DIR / "simple.mcap"
+    assert p.exists(), f"Fixture missing: {p}. Run: python -m tests.generate_fixtures"
+    return p
+
+
+@pytest.fixture
+def fixture_multi_topic_mcap() -> Path:
+    """Pre-generated multi_topic.mcap from tests/fixtures/."""
+    p = FIXTURES_DIR / "multi_topic.mcap"
+    assert p.exists(), f"Fixture missing: {p}. Run: python -m tests.generate_fixtures"
     return p
 
 
