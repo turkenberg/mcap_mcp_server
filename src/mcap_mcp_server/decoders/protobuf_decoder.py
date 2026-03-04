@@ -129,7 +129,8 @@ def _extract_protobuf_fields(
 def _walk_pb_descriptor(descriptor: Any, fields: list[FieldInfo], max_depth: int, prefix: str, depth: int, separator: str) -> None:
     for field in descriptor.fields:
         full_name = f"{prefix}{separator}{field.name}" if prefix else field.name
-        if field.label == FieldDescriptor.LABEL_REPEATED:
+        label = getattr(field, "label", None)
+        if label == FieldDescriptor.LABEL_REPEATED:
             fields.append(FieldInfo(name=full_name, type="VARCHAR"))
         elif field.type == FieldDescriptor.TYPE_MESSAGE and depth < max_depth - 1:
             _walk_pb_descriptor(
