@@ -489,7 +489,6 @@ SQL without additional prompting.
 |------|------|----------|-------------|
 | `sql` | string | Yes | SQL query to execute. |
 | `limit` | integer | No | Override result row limit. Default: 1000. Max: 10000. |
-| `format` | string | No | Output format: `"table"` (default), `"csv"`, `"json"`. |
 
 **Returns:** Query results.
 

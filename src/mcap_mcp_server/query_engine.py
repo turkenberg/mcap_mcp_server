@@ -137,7 +137,6 @@ class QueryEngine:
         self,
         sql: str,
         limit: int | None = None,
-        format: str = "table",
     ) -> dict[str, Any]:
         """Execute a read-only SQL query with safety checks.
 
@@ -174,19 +173,14 @@ class QueryEngine:
         columns = [desc[0] for desc in description] if description else []
         types = [desc[1] for desc in description] if description else []
 
-        if format == "csv":
-            return self._format_csv(columns, rows, truncated, elapsed)
-        elif format == "json":
-            return self._format_json(columns, rows, truncated, elapsed)
-        else:
-            return {
-                "columns": columns,
-                "types": types,
-                "rows": [list(r) for r in rows],
-                "row_count": len(rows),
-                "truncated": truncated,
-                "execution_time_ms": elapsed,
-            }
+        return {
+            "columns": columns,
+            "types": types,
+            "rows": [list(r) for r in rows],
+            "row_count": len(rows),
+            "truncated": truncated,
+            "execution_time_ms": elapsed,
+        }
 
     def _execute_with_timeout(self, sql: str) -> tuple[list, list]:
         """Run a SQL statement with a timeout, interrupting DuckDB if exceeded."""
@@ -213,35 +207,6 @@ class QueryEngine:
         for fn in _BLOCKED_FUNCTIONS:
             if fn.upper() + "(" in upper.replace(" ", ""):
                 raise ValueError(f"Blocked SQL function: {fn}")
-
-    def _format_csv(
-        self, columns: list[str], rows: list, truncated: bool, elapsed: int
-    ) -> dict[str, Any]:
-        import csv
-        import io
-
-        buf = io.StringIO()
-        writer = csv.writer(buf)
-        writer.writerow(columns)
-        for row in rows:
-            writer.writerow(row)
-        return {
-            "data": buf.getvalue(),
-            "row_count": len(rows),
-            "truncated": truncated,
-            "execution_time_ms": elapsed,
-        }
-
-    def _format_json(
-        self, columns: list[str], rows: list, truncated: bool, elapsed: int
-    ) -> dict[str, Any]:
-        records = [dict(zip(columns, row)) for row in rows]
-        return {
-            "data": records,
-            "row_count": len(rows),
-            "truncated": truncated,
-            "execution_time_ms": elapsed,
-        }
 
     def close(self) -> None:
         self._conn.close()

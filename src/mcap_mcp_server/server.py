@@ -304,11 +304,10 @@ def create_server(config: ServerConfig) -> FastMCP:
     def query(
         sql: str,
         limit: int | None = None,
-        format: str = "table",
     ) -> str:
         """Run a SQL query on loaded data."""
         try:
-            result = engine.execute(sql, limit=limit, format=format)
+            result = engine.execute(sql, limit=limit)
         except ValueError as e:
             result = {"error": str(e)}
         return json.dumps(result, default=_json_default, indent=2)

@@ -64,6 +64,5 @@ Execute SQL against loaded data. Full DuckDB SQL is supported, including `ASOF J
 |-----------|------|----------|-------------|
 | `sql` | string | Yes | SQL query |
 | `limit` | integer | No | Override row limit (default: 1000, max: 10000) |
-| `format` | string | No | `"table"` (default), `"csv"`, or `"json"` |
 
 Returns columns, types, rows, row count, truncation flag, and execution time.

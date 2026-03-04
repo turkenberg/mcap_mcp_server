@@ -89,14 +89,3 @@ class TestQueryEngine:
     def test_invalid_sql_returns_error(self, engine_with_data: QueryEngine):
         result = engine_with_data.execute("SELECT * FROM nonexistent_table")
         assert "error" in result
-
-    def test_csv_format(self, engine_with_data: QueryEngine):
-        result = engine_with_data.execute("SELECT voltage FROM battery LIMIT 2", format="csv")
-        assert "data" in result
-        assert "voltage" in result["data"]
-
-    def test_json_format(self, engine_with_data: QueryEngine):
-        result = engine_with_data.execute("SELECT voltage FROM battery LIMIT 2", format="json")
-        assert "data" in result
-        assert isinstance(result["data"], list)
-        assert "voltage" in result["data"][0]

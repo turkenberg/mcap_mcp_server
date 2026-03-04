@@ -100,29 +100,9 @@ class TestLoadRecordingExtras:
         assert result["skipped_topics"] == []
 
 
-# ---- query format ----
+# ---- query extras ----
 
-class TestQueryFormats:
-    def test_csv_format(self, mcp_server):
-        load_fn = _get_tool_fn(mcp_server, "load_recording")
-        load_fn(file="session_001.mcap")
-        query_fn = _get_tool_fn(mcp_server, "query")
-        result = json.loads(query_fn(
-            sql="SELECT voltage FROM battery LIMIT 2", format="csv"
-        ))
-        assert "data" in result
-        assert "voltage" in result["data"]
-
-    def test_json_format(self, mcp_server):
-        load_fn = _get_tool_fn(mcp_server, "load_recording")
-        load_fn(file="session_001.mcap")
-        query_fn = _get_tool_fn(mcp_server, "query")
-        result = json.loads(query_fn(
-            sql="SELECT voltage FROM battery LIMIT 2", format="json"
-        ))
-        assert "data" in result
-        assert isinstance(result["data"], list)
-
+class TestQueryExtras:
     def test_query_with_limit_override(self, mcp_server):
         load_fn = _get_tool_fn(mcp_server, "load_recording")
         load_fn(file="session_001.mcap")
