@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mcap-mcp-server"
-version = "0.1.0"
+version = "0.2.0"
 description = "A generic SQL query interface for MCAP robotics data via the Model Context Protocol"
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -51,10 +51,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/turkenberg/mcap_mcp_server"
+Homepage = "https://turkenberg.github.io/mcap_mcp_server/"
 Repository = "https://github.com/turkenberg/mcap_mcp_server"
 Issues = "https://github.com/turkenberg/mcap_mcp_server/issues"
-Documentation = "https://github.com/turkenberg/mcap_mcp_server#readme"
+Documentation = "https://turkenberg.github.io/mcap_mcp_server/"
 
 [project.scripts]
 mcap-mcp-server = "mcap_mcp_server.__main__:main"
