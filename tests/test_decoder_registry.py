@@ -1,8 +1,37 @@
 """Tests for the decoder registry."""
 
+import pytest
 
 from mcap_mcp_server.decoder_registry import DecoderRegistry
 from mcap_mcp_server.decoders.json_decoder import JsonDecoder
+
+try:
+    import google.protobuf  # noqa: F401
+
+    _HAS_PROTOBUF = True
+except ImportError:
+    _HAS_PROTOBUF = False
+
+try:
+    import mcap_ros1  # noqa: F401
+
+    _HAS_ROS1 = True
+except ImportError:
+    _HAS_ROS1 = False
+
+try:
+    import mcap_ros2  # noqa: F401
+
+    _HAS_ROS2 = True
+except ImportError:
+    _HAS_ROS2 = False
+
+try:
+    import flatbuffers  # noqa: F401
+
+    _HAS_FLATBUFFERS = True
+except ImportError:
+    _HAS_FLATBUFFERS = False
 
 
 class TestDecoderRegistry:
@@ -37,27 +66,34 @@ class TestDecoderRegistry:
         encodings = reg.available_encodings
         assert "JsonDecoder" in encodings
 
+    @pytest.mark.skipif(
+        not all([_HAS_PROTOBUF, _HAS_ROS1, _HAS_ROS2, _HAS_FLATBUFFERS]),
+        reason="requires all optional decoder packages",
+    )
     def test_optional_decoders_registered_when_available(self):
         reg = DecoderRegistry()
         encodings = reg.available_encodings
-        # These should be auto-registered since the packages are installed
         assert "ProtobufDecoder" in encodings
         assert "Ros1Decoder" in encodings
         assert "Ros2Decoder" in encodings
         assert "FlatBufferDecoder" in encodings
 
+    @pytest.mark.skipif(not _HAS_PROTOBUF, reason="protobuf not installed")
     def test_protobuf_encoding_found(self):
         reg = DecoderRegistry()
         assert reg.get_decoder("protobuf", "protobuf") is not None
 
+    @pytest.mark.skipif(not _HAS_ROS1, reason="mcap-ros1-support not installed")
     def test_ros1_encoding_found(self):
         reg = DecoderRegistry()
         assert reg.get_decoder("ros1", "ros1msg") is not None
 
+    @pytest.mark.skipif(not _HAS_ROS2, reason="mcap-ros2-support not installed")
     def test_ros2_encoding_found(self):
         reg = DecoderRegistry()
         assert reg.get_decoder("cdr", "ros2msg") is not None
 
+    @pytest.mark.skipif(not _HAS_FLATBUFFERS, reason="flatbuffers not installed")
     def test_flatbuffer_encoding_found(self):
         reg = DecoderRegistry()
         assert reg.get_decoder("flatbuffer", "flatbuffer") is not None
