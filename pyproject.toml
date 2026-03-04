@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mcap-mcp-server"
-version = "0.3.0"
+version = "0.4.0"
 description = "A generic SQL query interface for MCAP robotics data via the Model Context Protocol"
 readme = "README.md"
 license = "GPL-3.0-or-later"
