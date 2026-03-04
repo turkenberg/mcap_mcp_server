@@ -1,6 +1,5 @@
 """Tests for the decoder registry."""
 
-import pytest
 
 from mcap_mcp_server.decoder_registry import DecoderRegistry
 from mcap_mcp_server.decoders.json_decoder import JsonDecoder

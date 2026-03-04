@@ -12,7 +12,6 @@ a minimal reflection parser for the .bfbs format.
 
 from __future__ import annotations
 
-import json
 import logging
 import struct
 from typing import Any
@@ -23,12 +22,7 @@ from mcap_mcp_server.flatten import flatten_dict
 logger = logging.getLogger(__name__)
 
 try:
-    import flatbuffers
-    import flatbuffers.encode
-    import flatbuffers.number_types
-    import flatbuffers.packer
-    import flatbuffers.table
-
+    import flatbuffers  # noqa: F401
     _AVAILABLE = True
 except ImportError:
     _AVAILABLE = False

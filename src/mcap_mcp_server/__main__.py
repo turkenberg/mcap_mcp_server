@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
-from mcap_mcp_server.config import ServerConfig, load_config
+from mcap_mcp_server.config import load_config
 from mcap_mcp_server.server import create_server
 
 

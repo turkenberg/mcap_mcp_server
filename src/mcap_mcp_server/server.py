@@ -17,7 +17,6 @@ from mcap_mcp_server.decoder_registry import DecoderRegistry
 from mcap_mcp_server.mcap_reader import (
     get_schema_info,
     get_summary,
-    iter_messages,
     topic_to_table_name,
 )
 from mcap_mcp_server.query_engine import QueryEngine

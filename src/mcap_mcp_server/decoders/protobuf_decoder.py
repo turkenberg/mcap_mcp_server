@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from mcap_mcp_server.decoders.base import NUMERIC_TYPE_MAP, FieldInfo
+from mcap_mcp_server.decoders.base import FieldInfo
 from mcap_mcp_server.flatten import flatten_dict
 
 logger = logging.getLogger(__name__)

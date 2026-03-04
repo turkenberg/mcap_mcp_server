@@ -1,22 +1,18 @@
 """Tests for the Protobuf decoder."""
 
-import json
-from typing import Any
+import importlib.util
 
 import pytest
 
-try:
-    from google.protobuf.compiler.plugin_pb2 import CodeGeneratorRequest
+PROTOBUF_AVAILABLE = importlib.util.find_spec("google.protobuf") is not None
+
+if PROTOBUF_AVAILABLE:
     from google.protobuf.descriptor_pb2 import (
         DescriptorProto,
         FieldDescriptorProto,
         FileDescriptorProto,
         FileDescriptorSet,
     )
-
-    PROTOBUF_AVAILABLE = True
-except ImportError:
-    PROTOBUF_AVAILABLE = False
 
 pytestmark = pytest.mark.skipif(not PROTOBUF_AVAILABLE, reason="protobuf not installed")
 

@@ -1,13 +1,10 @@
 """Tests for the ROS 1 decoder."""
 
+import importlib.util
+
 import pytest
 
-try:
-    from mcap_ros1.decoder import DecoderFactory
-
-    ROS1_AVAILABLE = True
-except ImportError:
-    ROS1_AVAILABLE = False
+ROS1_AVAILABLE = importlib.util.find_spec("mcap_ros1") is not None
 
 pytestmark = pytest.mark.skipif(not ROS1_AVAILABLE, reason="mcap-ros1-support not installed")
 

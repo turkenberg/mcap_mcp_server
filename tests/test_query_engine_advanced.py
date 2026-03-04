@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pandas as pd
-import pytest
 
 from mcap_mcp_server.query_engine import QueryEngine
 
