@@ -1,5 +1,11 @@
 # mcap-mcp-server
 
+[![CI](https://github.com/turkenberg/mcap_mcp_server/actions/workflows/ci.yml/badge.svg)](https://github.com/turkenberg/mcap_mcp_server/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/turkenberg/mcap_mcp_server/graph/badge.svg)](https://codecov.io/gh/turkenberg/mcap_mcp_server)
+[![PyPI](https://img.shields.io/pypi/v/mcap-mcp-server)](https://pypi.org/project/mcap-mcp-server/)
+[![Python](https://img.shields.io/pypi/pyversions/mcap-mcp-server)](https://pypi.org/project/mcap-mcp-server/)
+[![License](https://img.shields.io/github/license/turkenberg/mcap_mcp_server)](https://github.com/turkenberg/mcap_mcp_server/blob/master/LICENSE)
+
 A generic SQL query interface for [MCAP](https://mcap.dev) robotics recording data via the [Model Context Protocol](https://modelcontextprotocol.io).
 
 > **Status**: Alpha — Core implementation with all encoding decoders (JSON, Protobuf, ROS 1, ROS 2, FlatBuffers).
