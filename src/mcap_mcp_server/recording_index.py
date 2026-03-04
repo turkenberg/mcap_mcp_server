@@ -81,7 +81,7 @@ class RecordingIndex:
         glob_pattern = "**/*.mcap" if self._recursive else "*.mcap"
         found_paths: set[str] = set()
 
-        for mcap_path in root.glob(glob_pattern):
+        for mcap_path in _safe_glob(root, glob_pattern):
             key = str(mcap_path.resolve())
             found_paths.add(key)
             if key not in self._cache:
@@ -120,6 +120,18 @@ class RecordingIndex:
                 }
             )
         return result
+
+
+def _safe_glob(root: Path, pattern: str):
+    """Iterate glob results, skipping directories that are inaccessible (cloud mounts, permissions, etc.)."""
+    it = root.glob(pattern)
+    while True:
+        try:
+            yield next(it)
+        except StopIteration:
+            break
+        except OSError as exc:
+            logger.debug("Skipping inaccessible path during scan: %s", exc)
 
 
 def _safe_get_summary(path: Path) -> RecordingSummary | None:
