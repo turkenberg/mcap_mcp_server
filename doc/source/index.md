@@ -72,6 +72,7 @@ That's it. Point your LLM at MCAP files and ask questions.
 ```{toctree}
 :maxdepth: 2
 :caption: Architecture
+:hidden:
 
 architecture
 ```
@@ -79,6 +80,7 @@ architecture
 ```{toctree}
 :maxdepth: 2
 :caption: Interfaces
+:hidden:
 
 tools
 decoders
@@ -87,6 +89,7 @@ decoders
 ```{toctree}
 :maxdepth: 2
 :caption: Configuration
+:hidden:
 
 configuration
 ```
