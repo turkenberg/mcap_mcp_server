@@ -1,0 +1,72 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcap-mcp-server"
+version = "0.1.0"
+description = "A generic SQL query interface for MCAP robotics data via the Model Context Protocol"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.10"
+authors = [
+    { name = "Antoine Bodin" },
+]
+keywords = ["mcap", "mcp", "robotics", "duckdb", "sql", "telemetry"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "mcp>=1.0.0",
+    "mcap>=1.1.0",
+    "duckdb>=1.0.0",
+    "pandas>=2.0.0",
+    "pyarrow>=14.0.0",
+]
+
+[project.optional-dependencies]
+protobuf = ["mcap-protobuf-support>=0.9.0", "protobuf>=4.0.0"]
+ros1 = ["mcap-ros1-support>=0.9.0"]
+ros2 = ["mcap-ros2-support>=0.9.0"]
+flatbuffers = ["flatbuffers>=23.0.0"]
+all = [
+    "mcap-mcp-server[protobuf]",
+    "mcap-mcp-server[ros1]",
+    "mcap-mcp-server[ros2]",
+    "mcap-mcp-server[flatbuffers]",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.4.0",
+]
+
+[project.scripts]
+mcap-mcp-server = "mcap_mcp_server.__main__:main"
+
+[project.entry-points."mcap_mcp_server.decoders"]
+json = "mcap_mcp_server.decoders.json_decoder:JsonDecoder"
+protobuf = "mcap_mcp_server.decoders.protobuf_decoder:ProtobufDecoder"
+ros1 = "mcap_mcp_server.decoders.ros1_decoder:Ros1Decoder"
+ros2 = "mcap_mcp_server.decoders.ros2_decoder:Ros2Decoder"
+flatbuffer = "mcap_mcp_server.decoders.flatbuffer_decoder:FlatBufferDecoder"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcap_mcp_server"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
