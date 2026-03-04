@@ -1,0 +1,445 @@
+/* ============================================================================
+   MCAP MCP Server — Documentation Theme
+   ============================================================================ */
+
+:root {
+    --brand-primary: #1e293b;
+    --brand-secondary: #e2e8f0;
+    --brand-charcoal: #0f172a;
+    --brand-black-bg: #0c0f17;
+    --brand-inactive: #64748b;
+
+    --brand-bg-light-1: #f8fafc;
+    --brand-bg-light-2: #f1f5f9;
+
+    --brand-accent: #0891b2;
+    --brand-success: #059669;
+    --brand-warning: #d97706;
+    --brand-error: #dc2626;
+    --brand-info: #0891b2;
+}
+
+/* ============================================================================
+   Global Styles
+   ============================================================================ */
+
+body {
+    background-color: var(--brand-bg-light-1);
+    color: var(--brand-charcoal);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ============================================================================
+   Content Area
+   ============================================================================ */
+
+.wy-nav-content {
+    max-width: 27cm;
+    margin: 0;
+    background-color: var(--brand-bg-light-1);
+    color: var(--brand-charcoal);
+}
+
+.wy-nav-content-wrap {
+    background-color: var(--brand-bg-light-1);
+}
+
+/* ============================================================================
+   Sidebar Navigation
+   ============================================================================ */
+
+.wy-side-nav-search {
+    background-color: var(--brand-primary);
+    text-align: center;
+    padding: 1rem;
+}
+
+.wy-side-nav-search img {
+    max-width: 100%;
+    height: auto;
+    max-height: 80px;
+    display: block;
+    padding: 0.5rem 0;
+    margin: 0 auto 0.5rem;
+}
+
+.wy-side-nav-search,
+.wy-side-nav-search * {
+    color: var(--brand-secondary) !important;
+}
+
+.wy-side-nav-search a,
+.wy-side-nav-search a:visited,
+.wy-side-nav-search a:hover,
+.wy-side-nav-search a:focus {
+    color: var(--brand-secondary) !important;
+}
+
+.wy-side-nav-search .icon,
+.wy-side-nav-search .icon-home {
+    color: var(--brand-secondary) !important;
+}
+
+.wy-side-nav-search input[type="text"],
+.wy-side-nav-search input[type="search"],
+.wy-side-nav-search .rtd-search,
+.wy-side-nav-search .rtd-search input {
+    color: var(--brand-charcoal) !important;
+    background-color: var(--brand-bg-light-1) !important;
+}
+
+.wy-side-nav-search input::placeholder {
+    color: var(--brand-inactive) !important;
+}
+
+.wy-nav-side {
+    background-color: var(--brand-primary);
+}
+
+.wy-menu-vertical {
+    background-color: var(--brand-primary);
+}
+
+.wy-menu-vertical .caption {
+    color: var(--brand-secondary);
+}
+
+.wy-menu-vertical a,
+.wy-menu-vertical li a,
+.wy-menu-vertical li.toctree-l1 > a,
+.wy-menu-vertical li.toctree-l2 > a,
+.wy-menu-vertical li.toctree-l3 > a,
+.wy-menu-vertical li.toctree-l4 > a {
+    color: var(--brand-secondary);
+}
+
+.wy-menu-vertical li.current a,
+.wy-menu-vertical li.current ul a,
+.wy-menu-vertical li.current ul li a,
+.wy-menu-vertical li.toctree-l1.current a,
+.wy-menu-vertical li.toctree-l1.current ul a,
+.wy-menu-vertical li.toctree-l1.current ul li a,
+.wy-menu-vertical li.toctree-l1.current ul li.toctree-l2 > a,
+.wy-menu-vertical li.toctree-l1.current ul li.toctree-l3 > a,
+.wy-menu-vertical li.toctree-l1.current ul li.toctree-l4 > a,
+.wy-menu-vertical li.toctree-l2.current a,
+.wy-menu-vertical li.toctree-l3.current a,
+.wy-menu-vertical li.toctree-l4.current a {
+    color: var(--brand-charcoal);
+}
+
+.wy-menu-vertical a:hover,
+.wy-menu-vertical li a:hover {
+    background-color: rgba(226, 232, 240, 0.1);
+    color: var(--brand-secondary);
+}
+
+.wy-menu-vertical li.current > a,
+.wy-menu-vertical li.toctree-l1.current > a,
+.wy-menu-vertical li.toctree-l2.current > a,
+.wy-menu-vertical li.toctree-l3.current > a,
+.wy-menu-vertical li.toctree-l4.current > a {
+    background-color: var(--brand-bg-light-1);
+    color: var(--brand-charcoal);
+}
+
+.wy-menu-vertical li.current > a {
+    background-color: var(--brand-bg-light-1);
+}
+
+.wy-menu-vertical li.current > a:hover,
+.wy-menu-vertical li.toctree-l1.current > a:hover,
+.wy-menu-vertical li.toctree-l2.current > a:hover {
+    background-color: var(--brand-bg-light-1);
+    color: var(--brand-charcoal);
+}
+
+.wy-menu-vertical li.current ul li a,
+.wy-menu-vertical li.current ul li.toctree-l2 > a,
+.wy-menu-vertical li.current ul li.toctree-l3 > a,
+.wy-menu-vertical li.current ul li.toctree-l4 > a,
+.wy-menu-vertical li.toctree-l1.current ul li a,
+.wy-menu-vertical li.toctree-l1.current ul li.toctree-l2 > a,
+.wy-menu-vertical li.toctree-l1.current ul li.toctree-l3 > a,
+.wy-menu-vertical li.toctree-l1.current ul li.toctree-l4 > a,
+.wy-menu-vertical li.toctree-l1.current ul ul li a,
+.wy-menu-vertical li.toctree-l1.current ul ul li.toctree-l3 > a,
+.wy-menu-vertical li.toctree-l1.current ul ul li.toctree-l4 > a,
+.wy-menu-vertical li.toctree-l1.current ul ul ul li a,
+.wy-menu-vertical li.toctree-l1.current ul ul ul li.toctree-l4 > a,
+.wy-menu-vertical li.toctree-l2.current ul li a,
+.wy-menu-vertical li.toctree-l3.current ul li a {
+    color: var(--brand-charcoal);
+}
+
+.wy-menu-vertical li.current ul li a:hover,
+.wy-menu-vertical li.toctree-l1.current ul li a:hover,
+.wy-menu-vertical li.toctree-l1.current ul ul li a:hover,
+.wy-menu-vertical li.toctree-l2.current ul li a:hover {
+    background-color: rgba(30, 41, 59, 0.05);
+    color: var(--brand-charcoal);
+}
+
+/* ============================================================================
+   Typography
+   ============================================================================ */
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--brand-charcoal);
+    font-weight: 600;
+}
+
+h1 {
+    border-bottom: 2px solid var(--brand-accent);
+    padding-bottom: 0.5rem;
+}
+
+h2 {
+    border-bottom: 1px solid rgba(30, 41, 59, 0.2);
+    padding-bottom: 0.3rem;
+}
+
+/* ============================================================================
+   Links
+   ============================================================================ */
+
+a {
+    color: var(--brand-accent);
+}
+
+a:visited {
+    color: var(--brand-accent);
+}
+
+a:hover {
+    color: #0e7490;
+}
+
+a.reference.external {
+    color: var(--brand-accent);
+}
+
+a.reference.external:hover {
+    color: #0e7490;
+}
+
+/* ============================================================================
+   Code Blocks
+   ============================================================================ */
+
+code {
+    background-color: var(--brand-bg-light-2);
+    color: var(--brand-charcoal);
+    border: 1px solid rgba(30, 41, 59, 0.1);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+}
+
+pre {
+    background-color: var(--brand-bg-light-2);
+    border: 1px solid rgba(30, 41, 59, 0.1);
+    border-radius: 4px;
+}
+
+pre code {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+}
+
+.highlight {
+    background-color: var(--brand-bg-light-2);
+}
+
+.highlight pre {
+    background-color: var(--brand-bg-light-2);
+}
+
+/* ============================================================================
+   Tables
+   ============================================================================ */
+
+table.docutils {
+    border: 1px solid rgba(30, 41, 59, 0.2);
+}
+
+table.docutils th {
+    background-color: var(--brand-primary);
+    color: var(--brand-secondary);
+    border: 1px solid rgba(226, 232, 240, 0.2);
+}
+
+table.docutils td {
+    border: 1px solid rgba(30, 41, 59, 0.1);
+    background-color: var(--brand-bg-light-1);
+}
+
+table.docutils tr:nth-child(even) td {
+    background-color: var(--brand-bg-light-2);
+}
+
+/* ============================================================================
+   Admonitions (Notes, Warnings, etc.)
+   ============================================================================ */
+
+.admonition {
+    border-left: 4px solid;
+    border-radius: 4px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.admonition-title {
+    font-weight: 600;
+}
+
+.admonition.note {
+    background-color: rgba(8, 145, 178, 0.08);
+    border-color: var(--brand-info);
+}
+
+.admonition.note .admonition-title {
+    color: var(--brand-info);
+}
+
+.admonition.warning {
+    background-color: rgba(217, 119, 6, 0.08);
+    border-color: var(--brand-warning);
+}
+
+.admonition.warning .admonition-title {
+    color: var(--brand-warning);
+}
+
+.admonition.danger,
+.admonition.error {
+    background-color: rgba(220, 38, 38, 0.08);
+    border-color: var(--brand-error);
+}
+
+.admonition.danger .admonition-title,
+.admonition.error .admonition-title {
+    color: var(--brand-error);
+}
+
+.admonition.tip,
+.admonition.success {
+    background-color: rgba(5, 150, 105, 0.08);
+    border-color: var(--brand-success);
+}
+
+.admonition.tip .admonition-title,
+.admonition.success .admonition-title {
+    color: var(--brand-success);
+}
+
+/* ============================================================================
+   Buttons and Navigation
+   ============================================================================ */
+
+.wy-breadcrumbs li {
+    color: var(--brand-inactive);
+}
+
+.wy-breadcrumbs a {
+    color: var(--brand-accent);
+}
+
+.wy-breadcrumbs a:hover {
+    color: #0e7490;
+}
+
+.btn {
+    background-color: var(--brand-primary);
+    color: var(--brand-secondary);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: var(--brand-accent);
+    color: #ffffff;
+}
+
+/* ============================================================================
+   Search
+   ============================================================================ */
+
+input[type="text"] {
+    border: 1px solid rgba(30, 41, 59, 0.2);
+    border-radius: 4px;
+    padding: 0.5rem;
+    color: var(--brand-charcoal);
+}
+
+input[type="text"]:focus {
+    border-color: var(--brand-accent);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.15);
+}
+
+/* ============================================================================
+   Mermaid Diagrams
+   ============================================================================ */
+
+.mermaid {
+    background-color: var(--brand-bg-light-1);
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid rgba(30, 41, 59, 0.1);
+}
+
+/* ============================================================================
+   Footer
+   ============================================================================ */
+
+footer {
+    color: var(--brand-inactive);
+    border-top: 1px solid rgba(30, 41, 59, 0.1);
+}
+
+footer a {
+    color: var(--brand-accent);
+}
+
+/* ============================================================================
+   Mobile Navigation
+   ============================================================================ */
+
+.wy-nav-top {
+    background-color: var(--brand-primary) !important;
+    color: var(--brand-secondary) !important;
+}
+
+.wy-nav-top,
+.wy-nav-top *,
+.wy-nav-top i,
+.wy-nav-top a {
+    color: var(--brand-secondary) !important;
+}
+
+.wy-nav-top a:hover {
+    color: var(--brand-secondary) !important;
+    opacity: 0.9;
+}
+
+/* ============================================================================
+   Responsive Adjustments
+   ============================================================================ */
+
+@media screen and (max-width: 768px) {
+    .wy-nav-side {
+        background-color: var(--brand-primary);
+    }
+
+    .wy-menu-vertical {
+        background-color: var(--brand-primary);
+    }
+
+    .wy-nav-top {
+        background-color: var(--brand-primary);
+        color: var(--brand-secondary);
+    }
+}
