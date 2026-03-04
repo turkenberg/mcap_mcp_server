@@ -38,7 +38,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev,all]" pytest-cov
-      - run: pytest --cov=mcap_mcp_server --cov-report=xml --cov-report=term
+      - run: pytest --cov=mcap_mcp_server --cov-branch --cov-report=xml --cov-report=term
       - if: matrix.python-version == '3.12'
         uses: codecov/codecov-action@v5
         with:
