@@ -49,14 +49,13 @@ level = "INFO"
   "mcpServers": {
     "mcap-query": {
       "command": "uvx",
-      "args": ["mcap-mcp-server"],
-      "env": {
-        "MCAP_DATA_DIR": "/path/to/recordings"
-      }
+      "args": ["mcap-mcp-server[all]"]
     }
   }
 }
 ```
+
+> Set `MCAP_DATA_DIR` only if recordings live outside the project directory.
 
 ### Claude Desktop (`claude_desktop_config.json`)
 

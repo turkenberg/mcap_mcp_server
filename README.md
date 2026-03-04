@@ -47,7 +47,7 @@ Add to `.cursor/mcp.json` in your project:
   "mcpServers": {
     "mcap-query": {
       "command": "uvx",
-      "args": ["mcap-mcp-server"]
+      "args": ["mcap-mcp-server[all]"]
     }
   }
 }
@@ -62,7 +62,7 @@ Add to `claude_desktop_config.json`:
   "mcpServers": {
     "mcap-query": {
       "command": "uvx",
-      "args": ["mcap-mcp-server"]
+      "args": ["mcap-mcp-server[all]"]
     }
   }
 }

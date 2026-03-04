@@ -32,7 +32,7 @@ Add to your MCP client config (Cursor: `.cursor/mcp.json`, Claude Desktop: `clau
   "mcpServers": {
     "mcap-query": {
       "command": "uvx",
-      "args": ["mcap-mcp-server"]
+      "args": ["mcap-mcp-server[all]"]
     }
   }
 }

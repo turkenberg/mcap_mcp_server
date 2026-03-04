@@ -835,10 +835,7 @@ uvx mcap-mcp-server --data-dir /path/to/data
   "mcpServers": {
     "mcap-query": {
       "command": "uvx",
-      "args": ["mcap-mcp-server"],
-      "env": {
-        "MCAP_DATA_DIR": "/path/to/data"
-      }
+      "args": ["mcap-mcp-server[all]"]
     }
   }
 }
@@ -851,14 +848,13 @@ uvx mcap-mcp-server --data-dir /path/to/data
   "mcpServers": {
     "mcap-query": {
       "command": "uvx",
-      "args": ["mcap-mcp-server"],
-      "env": {
-        "MCAP_DATA_DIR": "/path/to/data"
-      }
+      "args": ["mcap-mcp-server[all]"]
     }
   }
 }
 ```
+
+> Set `MCAP_DATA_DIR` only if recordings live outside the project directory.
 
 **Advantages**: Standard MCP pattern. No Docker. Direct file access. Simple setup.
 
