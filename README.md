@@ -1,8 +1,5 @@
 # mcap-mcp-server
 
-[![PyPI](https://img.shields.io/pypi/v/mcap-mcp-server)](https://pypi.org/project/mcap-mcp-server/)
-[![Python](https://img.shields.io/pypi/pyversions/mcap-mcp-server)](https://pypi.org/project/mcap-mcp-server/)
-[![CI](https://github.com/turkenberg/mcap_mcp_server/actions/workflows/ci.yml/badge.svg)](https://github.com/turkenberg/mcap_mcp_server/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/turkenberg/mcap_mcp_server/graph/badge.svg)](https://codecov.io/gh/turkenberg/mcap_mcp_server)
 [![License](https://img.shields.io/github/license/turkenberg/mcap_mcp_server)](https://github.com/turkenberg/mcap_mcp_server/blob/master/LICENSE)
 
@@ -26,8 +23,6 @@ Add to `.cursor/mcp.json` (or `claude_desktop_config.json` for Claude Desktop):
 That's it. No install, no database, no API keys. Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 > **Upgrade:** `uvx mcap-mcp-server[all] --upgrade` — or just ask your LLM *"what version of mcap-mcp-server am I running?"*
-
-> **Recordings outside the project?** Set `MCAP_DATA_DIR=/path/to/recordings` as an env var, or just give the LLM an absolute path.
 
 ---
 
