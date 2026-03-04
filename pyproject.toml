@@ -51,10 +51,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://turkenberg.github.io/mcap_mcp_server/"
+Homepage = "https://turkenberg.github.io/mcap_mcp_server/index.html"
 Repository = "https://github.com/turkenberg/mcap_mcp_server"
 Issues = "https://github.com/turkenberg/mcap_mcp_server/issues"
-Documentation = "https://turkenberg.github.io/mcap_mcp_server/"
+Documentation = "https://turkenberg.github.io/mcap_mcp_server/index.html"
 
 [project.scripts]
 mcap-mcp-server = "mcap_mcp_server.__main__:main"

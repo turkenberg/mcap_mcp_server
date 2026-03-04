@@ -1,41 +1,46 @@
 # mcap-mcp-server
 
-[![CI](https://github.com/turkenberg/mcap_mcp_server/actions/workflows/ci.yml/badge.svg)](https://github.com/turkenberg/mcap_mcp_server/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/turkenberg/mcap_mcp_server/graph/badge.svg)](https://codecov.io/gh/turkenberg/mcap_mcp_server)
 [![PyPI](https://img.shields.io/pypi/v/mcap-mcp-server)](https://pypi.org/project/mcap-mcp-server/)
 [![Python](https://img.shields.io/pypi/pyversions/mcap-mcp-server)](https://pypi.org/project/mcap-mcp-server/)
+[![CI](https://github.com/turkenberg/mcap_mcp_server/actions/workflows/ci.yml/badge.svg)](https://github.com/turkenberg/mcap_mcp_server/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/turkenberg/mcap_mcp_server/graph/badge.svg)](https://codecov.io/gh/turkenberg/mcap_mcp_server)
 [![License](https://img.shields.io/github/license/turkenberg/mcap_mcp_server)](https://github.com/turkenberg/mcap_mcp_server/blob/master/LICENSE)
 
-A generic SQL query interface for [MCAP](https://mcap.dev) robotics recording data via the [Model Context Protocol](https://modelcontextprotocol.io).
+**Query your robot's [MCAP](https://mcap.dev) recordings with SQL — straight from your LLM.**
 
-> **Status**: Alpha — Core implementation with all encoding decoders (JSON, Protobuf, ROS 1, ROS 2, FlatBuffers).
-
-## What It Does
-
-Point this MCP server at a directory of MCAP files and query them with SQL — no database server, no ETL pipeline, no custom scripts.
+Point Claude, Cursor, or any MCP client at your bag files. Ask questions in plain English. Get SQL-powered answers from DuckDB. No scripts, no pipelines, no BS.
 
 ```
-MCAP files → mcap-mcp-server → DuckDB (in-memory) → SQL results
+MCAP files → mcap-mcp-server → DuckDB (in-memory) → SQL results → LLM
 ```
 
-Works with **Cursor**, **Claude Desktop**, or any MCP-compatible client.
+Supports **JSON, Protobuf, ROS 1, ROS 2, and FlatBuffers** out of the box.
 
-## Quick Start
+**[Full documentation](https://turkenberg.github.io/mcap_mcp_server/index.html)**
+
+---
+
+## Install
+
+Zero-install via `uvx` (recommended) — or `pip install`:
 
 ```bash
-# Install
 pip install mcap-mcp-server
 
-# Or zero-install via uvx
-uvx mcap-mcp-server
+# ROS 2 users
+pip install mcap-mcp-server[ros2]
+
+# Everything
+pip install mcap-mcp-server[all]
 ```
 
-## MCP Client Configuration
+## Configure Your MCP Client
 
-No configuration required — the server scans the project directory by default.
-All tools also accept absolute paths, so the LLM can reach any MCAP file on your system.
+Copy-paste the config below. That's it — no API keys, no setup, no database.
 
-### Cursor (`.cursor/mcp.json`)
+### Cursor
+
+Add to `.cursor/mcp.json` in your project:
 
 ```json
 {
@@ -48,7 +53,9 @@ All tools also accept absolute paths, so the LLM can reach any MCAP file on your
 }
 ```
 
-### Claude Desktop (`claude_desktop_config.json`)
+### Claude Desktop
+
+Add to `claude_desktop_config.json`:
 
 ```json
 {
@@ -61,125 +68,80 @@ All tools also accept absolute paths, so the LLM can reach any MCAP file on your
 }
 ```
 
-> **Tip:** Set `MCAP_DATA_DIR` only if your recordings live outside the project directory (e.g. a shared NAS or `/data/recordings`).
+### Windsurf / VS Code / Other MCP Clients
 
-## Available Tools
+Same JSON — check your client's docs for where to put it.
 
-| Tool | Description |
+> **Recordings outside the project?** Set `MCAP_DATA_DIR=/path/to/recordings` as an env var, or just give the LLM an absolute path — it handles that too.
+
+---
+
+## What Can It Do?
+
+Once configured, just talk to your LLM. It has 6 tools:
+
+| Tool | What it does |
 |------|-------------|
-| `list_recordings` | Discover MCAP files in the project (or any directory via `path`) |
-| `get_recording_info` | Full metadata, channels, and attachments for a specific file |
-| `get_schema` | Inspect SQL table names, column names and types for query planning |
-| `load_recording` | Decode MCAP data and load into DuckDB for SQL querying |
-| `query` | Execute SQL against loaded data (full DuckDB SQL including ASOF JOIN) |
-| `get_statistics` | Summary stats (min, max, mean, std) for numeric fields of a topic |
+| `list_recordings` | Find MCAP files in your project (or any path) |
+| `get_recording_info` | Metadata, channels, attachments for a file |
+| `get_schema` | SQL table names & column types — for query planning |
+| `load_recording` | Decode MCAP data into DuckDB |
+| `query` | Run SQL (full DuckDB — including ASOF JOIN) |
+| `get_statistics` | Quick stats (min/max/mean/std) for numeric fields |
 
-## Typical Workflow
+### Example Prompts
 
-1. **Discover** available recordings:
-   ```
-   → list_recordings
-   ```
+Just ask your LLM:
 
-2. **Inspect** the schema to plan queries:
-   ```
-   → get_schema file="session_001.mcap"
-   ```
+- *"List all my recordings and show me what topics are in session_003.mcap"*
+- *"Load the battery data and find all moments where voltage dropped below 22V"*
+- *"Correlate IMU acceleration with motor current using an ASOF JOIN"*
+- *"Compare average battery voltage across my last 5 runs"*
 
-3. **Load** data into DuckDB:
-   ```
-   → load_recording file="session_001.mcap"
-   ```
-
-4. **Query** with SQL:
-   ```sql
-   SELECT timestamp_us, voltage, current
-   FROM battery
-   WHERE voltage < 22.0
-   ORDER BY timestamp_us
-   ```
-
-## Example Queries
+### Example SQL (under the hood)
 
 ```sql
--- Time-windowed statistics (1-second windows)
-SELECT
-  (timestamp_us / 1000000) as second,
-  AVG(voltage) as avg_voltage,
-  MIN(voltage) as min_voltage
-FROM battery
-GROUP BY second
-ORDER BY second
+-- Time-windowed stats
+SELECT (timestamp_us / 1000000) as second,
+       AVG(voltage) as avg_v, MIN(voltage) as min_v
+FROM battery GROUP BY second ORDER BY second
 
--- Correlate battery with acceleration using ASOF JOIN
-SELECT
-  b.timestamp_us,
-  b.voltage,
-  i.linear_acceleration_x
-FROM battery b
-ASOF JOIN imu i ON b.timestamp_us >= i.timestamp_us
+-- Cross-sensor correlation via ASOF JOIN
+SELECT b.timestamp_us, b.voltage, i.linear_acceleration_x
+FROM battery b ASOF JOIN imu i ON b.timestamp_us >= i.timestamp_us
 
--- Compare across multiple loaded recordings
-SELECT 'run1' as recording, AVG(voltage) as avg_v FROM r1_battery
+-- Multi-recording comparison
+SELECT 'run1' as run, AVG(voltage) FROM r1_battery
 UNION ALL
-SELECT 'run2' as recording, AVG(voltage) as avg_v FROM r2_battery
-
--- Search metadata
-SELECT * FROM _metadata WHERE key LIKE '%serial%'
+SELECT 'run2', AVG(voltage) FROM r2_battery
 ```
 
-## Configuration
-
-### Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `MCAP_DATA_DIR` | `.` | Root directory to scan for MCAP files |
-| `MCAP_RECURSIVE` | `true` | Scan subdirectories recursively |
-| `MCAP_MAX_MEMORY_MB` | `2048` | Max memory for loaded data (LRU eviction) |
-| `MCAP_QUERY_TIMEOUT_S` | `30` | Max SQL query execution time |
-| `MCAP_DEFAULT_ROW_LIMIT` | `1000` | Default result row limit |
-| `MCAP_MAX_ROW_LIMIT` | `10000` | Maximum allowed row limit |
-| `MCAP_LOG_LEVEL` | `INFO` | Server log level |
-| `MCAP_TRANSPORT` | `stdio` | Transport: `stdio` or `sse` |
-| `MCAP_SSE_PORT` | `8080` | Port for SSE transport |
-| `MCAP_FLATTEN_DEPTH` | `3` | Max nesting depth for message flattening |
-
-### Config File (optional)
-
-Create `mcap-mcp-server.toml`:
-
-```toml
-[server]
-data_dir = "/data/recordings"
-recursive = true
-transport = "stdio"
-
-[limits]
-max_memory_mb = 4096
-query_timeout_s = 60
-default_row_limit = 1000
-max_row_limit = 50000
-
-[decoder]
-flatten_depth = 3
-
-[logging]
-level = "INFO"
-```
-
-Environment variables override config file values.
+---
 
 ## Supported Encodings
 
 | Encoding | Install |
 |----------|---------|
-| JSON | `pip install mcap-mcp-server` (built-in) |
+| JSON | Built-in |
 | Protobuf | `pip install mcap-mcp-server[protobuf]` |
 | ROS 1 | `pip install mcap-mcp-server[ros1]` |
 | ROS 2 (CDR) | `pip install mcap-mcp-server[ros2]` |
 | FlatBuffers | `pip install mcap-mcp-server[flatbuffers]` |
-| All encodings | `pip install mcap-mcp-server[all]` |
+| All | `pip install mcap-mcp-server[all]` |
+
+## Configuration (Optional)
+
+Defaults work for most setups. Tune if needed:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MCAP_DATA_DIR` | `.` | Root directory to scan for MCAP files |
+| `MCAP_RECURSIVE` | `true` | Scan subdirectories |
+| `MCAP_MAX_MEMORY_MB` | `2048` | Max memory for loaded data (LRU eviction) |
+| `MCAP_QUERY_TIMEOUT_S` | `30` | SQL query timeout |
+| `MCAP_DEFAULT_ROW_LIMIT` | `1000` | Default result row limit |
+| `MCAP_MAX_ROW_LIMIT` | `10000` | Max allowed row limit |
+| `MCAP_TRANSPORT` | `stdio` | `stdio` or `sse` |
 
 ## Docker
 
