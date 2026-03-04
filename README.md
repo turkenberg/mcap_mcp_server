@@ -22,17 +22,15 @@ Supports **JSON, Protobuf, ROS 1, ROS 2, and FlatBuffers** out of the box.
 
 ## Install
 
-Zero-install via `uvx` (recommended) — or `pip install`:
+Requires [`uv`](https://docs.astral.sh/uv/getting-started/installation/) (the Python package runner). If you don't have it:
 
 ```bash
-pip install mcap-mcp-server
-
-# ROS 2 users
-pip install mcap-mcp-server[ros2]
-
-# Everything
-pip install mcap-mcp-server[all]
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
+
+That's it — `uvx` handles the rest. No `pip install` needed.
+
+> **Manual install** (optional): `pip install mcap-mcp-server[all]`
 
 ## Configure Your MCP Client
 
