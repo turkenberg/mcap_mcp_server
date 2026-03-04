@@ -6,7 +6,7 @@
 
 ## Status
 
-**Draft** — Design phase. Not yet implemented.
+**Phase 1 complete** — Core server, all decoders (JSON, Protobuf, ROS1, ROS2, FlatBuffers), query engine, and test suite implemented. Phase 2 items (get_statistics, memory management, SSE transport) pending.
 
 ## Date
 
@@ -1034,43 +1034,45 @@ mcap-mcp-server/
 
 ## 17. Implementation Plan
 
-### Phase 1: Core (2-3 weeks)
+### Phase 1: Core — done
 
-- [ ] Repository setup, CI, `pyproject.toml`
-- [ ] MCAP reader layer (summary, schema extraction, message iteration)
-- [ ] JSON decoder (built-in, no optional deps)
-- [ ] DuckDB query engine (register tables, execute SQL, enforce safety)
-- [ ] MCP server with stdio transport
-- [ ] Tools: `list_recordings`, `get_schema`, `load_recording`, `query`
-- [ ] Tests with JSON-encoded MCAP fixture files
-- [ ] README with usage examples and MCP client configuration
+- [x] Repository setup, CI, `pyproject.toml`
+- [x] MCAP reader layer (summary, schema extraction, message iteration)
+- [x] JSON decoder (built-in, no optional deps)
+- [x] DuckDB query engine (register tables, execute SQL, enforce safety)
+- [x] MCP server with stdio transport
+- [x] Tools: `list_recordings`, `get_schema`, `load_recording`, `query`
+- [x] Tests with JSON-encoded MCAP fixture files (106 tests)
+- [x] README with usage examples and MCP client configuration
 
-### Phase 2: Decoders & Polish (1-2 weeks)
+### Phase 1b: All Decoders — done
 
-- [ ] FlatBuffers decoder (reflection-based)
-- [ ] Protobuf decoder (via `mcap-protobuf-support`)
-- [ ] ROS 2 decoder (via `mcap-ros2-support`)
+- [x] FlatBuffers decoder (custom bfbs parser + binary decode)
+- [x] Protobuf decoder (via `mcap-protobuf-support`)
+- [x] ROS 1 decoder (via `mcap-ros1-support`)
+- [x] ROS 2 decoder (via `mcap-ros2-support`)
+- [x] Decoder registry with entry-point discovery
+
+### Phase 2: Polish — pending
+
 - [ ] `get_recording_info` and `get_statistics` tools
 - [ ] MCP resources
-- [ ] Configuration system (env vars, TOML)
 - [ ] Memory management (LRU cache)
 - [ ] Multi-recording loading with aliases
 - [ ] Downsampling support
 
-### Phase 3: Distribution (1 week)
+### Phase 3: Distribution — pending
 
 - [ ] PyPI package publishing
 - [ ] Docker image and Dockerfile
 - [ ] SSE transport support
-- [ ] Usage documentation and examples
 - [ ] CI/CD for publishing
 
-### Phase 4: Performance & Hardening (ongoing)
+### Phase 4: Performance — pending
 
+- [ ] Load performance optimizations (see [load-performance spec](spec-load-performance.md))
 - [ ] Benchmarks on real-world MCAP files (10 MB → 1 GB)
-- [ ] Optimize FlatBuffer/Protobuf batch decoding
 - [ ] Edge cases (corrupted files, missing schemas, empty recordings)
-- [ ] Nested message flattening edge cases
 
 ---
 
