@@ -21,7 +21,7 @@ from mcap_mcp_server.mcap_reader import (
     topic_to_table_name,
 )
 from mcap_mcp_server.query_engine import QueryEngine
-from mcap_mcp_server.recording_index import RecordingIndex
+from mcap_mcp_server.recording_index import RecordingIndex, _ns_to_iso
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,7 @@ def create_server(config: ServerConfig) -> FastMCP:
         query_timeout_s=config.query_timeout_s,
         default_row_limit=config.default_row_limit,
         max_row_limit=config.max_row_limit,
+        max_memory_mb=config.max_memory_mb,
     )
 
     # ------------------------------------------------------------------
@@ -73,6 +74,42 @@ def create_server(config: ServerConfig) -> FastMCP:
         before_dt = _parse_datetime(before)
         summaries = index.scan(scan_path, after=after_dt, before=before_dt)
         return json.dumps(index.to_json(summaries), indent=2)
+
+    @mcp.tool(
+        name="get_recording_info",
+        description=(
+            "Get full metadata, channel details, and attachment list for a "
+            "specific MCAP recording file. Use this for detailed inspection "
+            "before loading data."
+        ),
+    )
+    def get_recording_info(file: str) -> str:
+        """Return detailed recording metadata, channels, and attachments."""
+        file_path = _resolve_file(file, config.data_dir)
+        s = get_summary(file_path)
+
+        channels: dict[str, Any] = {}
+        for ch in s.channels:
+            channels[ch.topic] = {
+                "schema_name": ch.schema_name,
+                "message_encoding": ch.message_encoding,
+                "message_count": ch.message_count,
+            }
+
+        result: dict[str, Any] = {
+            "file": Path(s.path).name,
+            "path": s.path,
+            "size_mb": round(s.size_mb, 1),
+            "library": s.library,
+            "start_time": _ns_to_iso(s.start_time_ns),
+            "end_time": _ns_to_iso(s.end_time_ns),
+            "duration_s": round(s.duration_s, 1),
+            "message_count": s.message_count,
+            "channels": channels,
+            "metadata": s.metadata,
+            "attachments": s.attachment_names,
+        }
+        return json.dumps(result, indent=2)
 
     @mcp.tool(
         name="get_schema",
@@ -224,18 +261,19 @@ def create_server(config: ServerConfig) -> FastMCP:
 
         tables_info: dict[str, dict[str, int]] = {}
         total_rows = 0
+        total_memory_bytes = 0
+        load_group = alias or Path(file_path).name
 
         for topic, cols in topic_columns.items():
             table_name = topic_to_table_name(topic, alias)
             df = pd.DataFrame(cols)
-            row_count = engine.register_dataframe(table_name, df)
+            total_memory_bytes += int(df.memory_usage(deep=True).sum())
+            row_count = engine.register_dataframe(table_name, df, group=load_group)
             tables_info[table_name] = {"rows": row_count, "columns": len(df.columns)}
             total_rows += row_count
 
-        # Register metadata table
-        _register_metadata_table(engine, summary, alias)
+        _register_metadata_table(engine, summary, alias, group=load_group)
 
-        # Register _recordings entry if alias is set
         if alias:
             _register_recordings_entry(engine, summary, alias)
 
@@ -249,6 +287,7 @@ def create_server(config: ServerConfig) -> FastMCP:
             "skipped_topics": skipped_topics,
             "skipped_reason": "no decoder available or binary blob" if skipped_topics else None,
             "total_rows": total_rows,
+            "memory_mb": round(total_memory_bytes / (1024 * 1024), 1),
             "load_time_s": round(load_time, 1),
         }
         return json.dumps(result, indent=2)
@@ -273,6 +312,88 @@ def create_server(config: ServerConfig) -> FastMCP:
             result = {"error": str(e)}
         return json.dumps(result, default=_json_default, indent=2)
 
+    @mcp.tool(
+        name="get_statistics",
+        description=(
+            "Get summary statistics (min, max, mean, std) for numeric fields "
+            "of a topic. The recording must be loaded first via load_recording."
+        ),
+    )
+    def get_statistics(
+        file: str,
+        topic: str,
+        fields: list[str] | None = None,
+    ) -> str:
+        """Return per-field statistics for a loaded topic."""
+        file_path = _resolve_file(file, config.data_dir)
+        summary = get_summary(file_path)
+        table_name = topic_to_table_name(topic)
+
+        loaded = engine.list_tables()
+        if table_name not in loaded:
+            return json.dumps(
+                {"error": f"Table '{table_name}' not loaded. Call load_recording first."}
+            )
+
+        _numeric_types = {
+            "TINYINT", "SMALLINT", "INTEGER", "BIGINT",
+            "UTINYINT", "USMALLINT", "UINTEGER", "UBIGINT",
+            "FLOAT", "DOUBLE", "HUGEINT",
+        }
+
+        if fields is None:
+            desc_result = engine.execute(
+                f"SELECT column_name, column_type FROM (DESCRIBE {table_name})",
+                limit=10000,
+            )
+            if "error" in desc_result:
+                return json.dumps(desc_result)
+            fields = [
+                row[0]
+                for row in desc_result["rows"]
+                if row[1] in _numeric_types and row[0] != "timestamp_us"
+            ]
+
+        if not fields:
+            return json.dumps({"error": "No numeric fields found for statistics."})
+
+        agg_parts = []
+        for f in fields:
+            escaped = f.replace('"', '""')
+            agg_parts.extend([
+                f'MIN("{escaped}") AS "{escaped}_min"',
+                f'MAX("{escaped}") AS "{escaped}_max"',
+                f'AVG("{escaped}") AS "{escaped}_mean"',
+                f'STDDEV_SAMP("{escaped}") AS "{escaped}_std"',
+            ])
+
+        sql = f"SELECT {', '.join(agg_parts)} FROM {table_name}"
+        agg_result = engine.execute(sql, limit=1)
+        if "error" in agg_result:
+            return json.dumps(agg_result)
+
+        row = agg_result["rows"][0] if agg_result["rows"] else []
+        field_stats: dict[str, dict[str, float | None]] = {}
+        for i, f in enumerate(fields):
+            base = i * 4
+            field_stats[f] = {
+                "min": row[base] if base < len(row) else None,
+                "max": row[base + 1] if base + 1 < len(row) else None,
+                "mean": round(row[base + 2], 6) if base + 2 < len(row) and row[base + 2] is not None else None,
+                "std": round(row[base + 3], 6) if base + 3 < len(row) and row[base + 3] is not None else None,
+            }
+
+        ch_summary = next((c for c in summary.channels if c.topic == topic), None)
+
+        result: dict[str, Any] = {
+            "file": Path(file_path).name,
+            "topic": topic,
+            "message_count": ch_summary.message_count if ch_summary else loaded.get(table_name, 0),
+            "duration_s": round(summary.duration_s, 1),
+            "fields": field_stats,
+        }
+        return json.dumps(result, default=_json_default, indent=2)
+
     # ------------------------------------------------------------------
     # Resources
     # ------------------------------------------------------------------
@@ -286,6 +407,39 @@ def create_server(config: ServerConfig) -> FastMCP:
     def resource_recordings() -> str:
         summaries = index.scan(config.data_dir)
         return json.dumps(index.to_json(summaries), indent=2)
+
+    @mcp.resource(
+        "mcap://schema/{filename}",
+        name="schema",
+        description="Full SQL schema for a specific MCAP recording",
+        mime_type="application/json",
+    )
+    def resource_schema(filename: str) -> str:
+        file_path = _resolve_file(filename, config.data_dir)
+        topics_info = get_schema_info(file_path, registry)
+        result: dict[str, Any] = {
+            "file": Path(file_path).name,
+            "topics": {},
+            "metadata_table": "_metadata",
+            "sql_hint": (
+                "Tables are named from topics: strip leading '/', replace '/' "
+                "with '_'. All tables have a 'timestamp_us' column (BIGINT, "
+                "microseconds). Use it for JOINs across topics. DuckDB supports "
+                "ASOF JOIN for time-series with different sample rates."
+            ),
+        }
+        for topic_name, schema in topics_info.items():
+            result["topics"][topic_name] = {
+                "table_name": schema.table_name,
+                "message_count": schema.message_count,
+                "schema_name": schema.schema_name,
+                "message_encoding": schema.message_encoding,
+                "fields": [
+                    {"name": f.name, "type": f.type, "description": f.description}
+                    for f in schema.fields
+                ],
+            }
+        return json.dumps(result, indent=2)
 
     return mcp
 
@@ -338,7 +492,7 @@ def _parse_time_to_ns(value: str | None) -> int | None:
 
 
 def _register_metadata_table(
-    engine: QueryEngine, summary: Any, alias: str | None
+    engine: QueryEngine, summary: Any, alias: str | None, group: str = "_default"
 ) -> None:
     """Create the _metadata table from MCAP metadata records."""
     rows = []
@@ -348,7 +502,7 @@ def _register_metadata_table(
     if rows:
         table_name = f"{alias}__metadata" if alias else "_metadata"
         df = pd.DataFrame(rows)
-        engine.register_dataframe(table_name, df)
+        engine.register_dataframe(table_name, df, group=group)
 
 
 def _register_recordings_entry(
