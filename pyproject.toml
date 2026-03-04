@@ -34,9 +34,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-protobuf = ["mcap-protobuf-support>=0.9.0", "protobuf>=4.0.0"]
-ros1 = ["mcap-ros1-support>=0.9.0"]
-ros2 = ["mcap-ros2-support>=0.9.0"]
+protobuf = ["mcap-protobuf-support>=0.5.0", "protobuf>=4.0.0"]
+ros1 = ["mcap-ros1-support>=0.7.0"]
+ros2 = ["mcap-ros2-support>=0.5.0"]
 flatbuffers = ["flatbuffers>=23.0.0"]
 all = [
     "mcap-mcp-server[protobuf]",
