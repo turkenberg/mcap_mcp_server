@@ -7,8 +7,6 @@
 
 ## Setup
 
-Add to `.cursor/mcp.json` (or `claude_desktop_config.json` for Claude Desktop):
-
 ```json
 {
   "mcpServers": {
