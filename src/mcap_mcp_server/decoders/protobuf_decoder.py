@@ -126,11 +126,18 @@ def _extract_protobuf_fields(
     return fields
 
 
+def _is_repeated(field: Any) -> bool:
+    """Check if a protobuf field is repeated, compatible with protobuf 4.x–7.x+."""
+    if hasattr(field, "is_repeated"):
+        return bool(field.is_repeated)
+    label = getattr(field, "label", None)
+    return label is not None and int(label) == FieldDescriptor.LABEL_REPEATED
+
+
 def _walk_pb_descriptor(descriptor: Any, fields: list[FieldInfo], max_depth: int, prefix: str, depth: int, separator: str) -> None:
     for field in descriptor.fields:
         full_name = f"{prefix}{separator}{field.name}" if prefix else field.name
-        label = getattr(field, "label", None)
-        if label is not None and int(label) == FieldDescriptor.LABEL_REPEATED:
+        if _is_repeated(field):
             fields.append(FieldInfo(name=full_name, type="VARCHAR"))
         elif field.type == FieldDescriptor.TYPE_MESSAGE and depth < max_depth - 1:
             _walk_pb_descriptor(
