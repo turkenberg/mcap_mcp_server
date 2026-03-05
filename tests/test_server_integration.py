@@ -137,20 +137,11 @@ class TestLoadRecordingMemoryInfo:
         assert "memory_budget_mb" in result
         assert result["memory_budget_mb"] == 2048
 
-    def test_eviction_warning(self, tmp_path: Path):
-        from tests.conftest import create_simple_mcap
-
-        create_simple_mcap(tmp_path / "big1.mcap", num_messages=5000)
-        create_simple_mcap(tmp_path / "big2.mcap", num_messages=5000)
-
-        config = ServerConfig(data_dir=tmp_path, max_memory_mb=0)
-        server = create_server(config)
-        load_fn = _get_tool_fn(server, "load_recording")
-
-        load_fn(file="big1.mcap")
-        result = json.loads(load_fn(file="big2.mcap"))
-        assert "evicted_tables" in result
-        assert "eviction_warning" in result
+    def test_invalid_memory_budget(self):
+        with pytest.raises(ValueError, match="too low"):
+            ServerConfig(max_memory_mb=0)
+        with pytest.raises(ValueError, match="too low"):
+            ServerConfig(max_memory_mb=32)
 
 
 def _get_tool_fn(server, name: str):

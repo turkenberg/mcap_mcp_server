@@ -34,6 +34,13 @@ class ServerConfig:
     sse_port: int = 8080
     flatten_depth: int = 3
 
+    def __post_init__(self) -> None:
+        if self.max_memory_mb < 64:
+            raise ValueError(
+                f"MCAP_MAX_MEMORY_MB={self.max_memory_mb} is too low. "
+                "At least 64 MB is required to load and query recordings."
+            )
+
     def configure_logging(self) -> None:
         logging.basicConfig(
             level=getattr(logging, self.log_level.upper(), logging.INFO),
