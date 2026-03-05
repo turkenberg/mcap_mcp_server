@@ -12,9 +12,8 @@ graph LR
     Files["MCAP Files<br/>(any encoding)"]
 
     Client -->|MCP protocol| Server
-    Server -->|register tables| DuckDB
     Server -->|read & decode| Files
-    Client -->|SQL queries| DuckDB
+    Server -->|register & query| DuckDB
 ```
 
 ## Quick Start

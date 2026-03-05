@@ -31,8 +31,8 @@ Fields are mapped to DuckDB column types based on the source schema. JSON fields
 | Source type | DuckDB type |
 |-------------|-------------|
 | bool | BOOLEAN |
-| int8 / byte | TINYINT |
-| uint8 | UTINYINT |
+| int8 | TINYINT |
+| uint8 / byte / char | UTINYINT |
 | int16 | SMALLINT |
 | uint16 | USMALLINT |
 | int32 / int | INTEGER |
@@ -43,6 +43,7 @@ Fields are mapped to DuckDB column types based on the source schema. JSON fields
 | double / float64 | DOUBLE |
 | string | VARCHAR |
 | bytes | BLOB |
+| time / duration | BIGINT |
 | array / repeated | VARCHAR (JSON-serialized) |
 | nested message | Flattened with `_` separator up to `flatten_depth` |
 

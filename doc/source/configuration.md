@@ -8,7 +8,7 @@ Configuration is layered: **defaults → TOML file → environment variables →
 |----------|---------|-------------|
 | `MCAP_DATA_DIR` | `.` | Root directory to scan for MCAP files |
 | `MCAP_RECURSIVE` | `true` | Scan subdirectories |
-| `MCAP_MAX_MEMORY_MB` | `2048` | Max memory for loaded data |
+| `MCAP_MAX_MEMORY_MB` | `2048` | Max memory for loaded data (minimum: 64) |
 | `MCAP_QUERY_TIMEOUT_S` | `30` | SQL query timeout (seconds) |
 | `MCAP_DEFAULT_ROW_LIMIT` | `1000` | Default result row limit |
 | `MCAP_MAX_ROW_LIMIT` | `10000` | Maximum allowed row limit |

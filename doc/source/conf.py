@@ -11,7 +11,7 @@ import sphinx_rtd_theme
 project = 'mcap-mcp-server'
 copyright = '2026, Antoine Bodin'
 author = 'Antoine Bodin'
-release = "0.1.0"
+release = "0.5.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

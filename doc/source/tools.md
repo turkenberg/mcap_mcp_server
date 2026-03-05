@@ -14,6 +14,16 @@ Discover available MCAP files in the configured data directory.
 
 Returns a JSON array of recording summaries: filename, size, duration, channel list, message counts, metadata keys.
 
+## get_recording_info
+
+Full metadata, channel details, and attachment list for a specific file. Does not require loading.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `file` | string | Yes | Filename or path to the MCAP file |
+
+Returns file path, size, library, start/end times, duration, message count, per-channel details (schema, encoding, count), metadata records, and attachment names.
+
 ## get_schema
 
 Inspect topics, table names, column names and DuckDB types before loading. Essential for query planning.
