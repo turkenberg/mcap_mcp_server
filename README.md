@@ -39,7 +39,7 @@ Just talk to your LLM:
 | `list_recordings` | no | Find MCAP files in your project (or any path) |
 | `get_recording_info` | no | Metadata, channels, attachments for a file |
 | `get_schema` | no | SQL table names & column types — for query planning |
-| `load_recording` | — | **Decode MCAP into DuckDB** (must be called before `query`) |
+| `load_recording` | — | **Decode MCAP into DuckDB** (the LLM calls this automatically) |
 | `query` | yes | Run SQL (full DuckDB — including ASOF JOIN) |
 | `get_version` | no | Server version, available decoders, upgrade command |
 
