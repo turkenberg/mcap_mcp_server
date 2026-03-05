@@ -75,7 +75,7 @@ No parameters. Returns:
 
 ```json
 {
-  "version": "0.4.0",
+  "version": "0.5.0",
   "decoders": ["JsonDecoder", "ProtobufDecoder", "Ros1Decoder", "Ros2Decoder", "FlatBufferDecoder"],
   "upgrade": "uvx mcap-mcp-server[all] --upgrade"
 }
