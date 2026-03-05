@@ -22,8 +22,6 @@ Add to `.cursor/mcp.json` (or `claude_desktop_config.json` for Claude Desktop):
 
 That's it. No install, no database, no API keys. Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
-> **Upgrade:** `uvx mcap-mcp-server[all] --upgrade` — or just ask your LLM *"what version of mcap-mcp-server am I running?"*
-
 ---
 
 ## Usage
@@ -34,6 +32,7 @@ Just talk to your LLM:
 - *"Load the battery data and find all moments where voltage dropped below 22V"*
 - *"Correlate IMU acceleration with motor current using an ASOF JOIN"*
 - *"Compare average battery voltage across my last 5 runs"*
+- *"What version of mcap-mcp-server am I running?"*
 
 ### Tools
 
@@ -63,6 +62,16 @@ SELECT 'run1' as run, AVG(voltage) FROM r1_battery
 UNION ALL
 SELECT 'run2', AVG(voltage) FROM r2_battery
 ```
+
+---
+
+## Update
+
+```bash
+uvx mcap-mcp-server[all] --upgrade
+```
+
+Or ask your LLM — the `get_version` tool returns the running version and the upgrade command.
 
 ---
 
