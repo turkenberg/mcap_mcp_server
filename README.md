@@ -26,9 +26,9 @@ That's it. No install, no database, no API keys. Requires [uv](https://docs.astr
 
 Just talk to your LLM:
 
-- *"List all my recordings and show me what topics are in session_003.mcap"*
-- *"Load the battery data and find all moments where voltage dropped below 22V"*
-- *"Correlate IMU acceleration with motor current using an ASOF JOIN"*
+- *"Tell me what topics are in session_003.mcap"*
+- *"In session_017.mcap find all moments where voltage dropped below 22V"*
+- *"Correlate IMU acceleration with motor current."*
 - *"Compare average battery voltage across my last 5 runs"*
 - *"What version of mcap-mcp-server am I running? Update it"*
 
@@ -67,16 +67,18 @@ SELECT 'run2', AVG(voltage) FROM r2_battery
 
 ## Performance
 
-Metadata tools (`list_recordings`, `get_recording_info`, `get_schema`) return in **< 1 ms** regardless of file size. SQL queries execute in **1–10 ms** once data is loaded. The one-time `load_recording` cost scales with file size:
+Metadata tools (`list_recordings`, `get_recording_info`, `get_schema`) return in **< 1 ms** regardless of file size. SQL queries execute in **1–20 ms** once data is loaded. The one-time `load_recording` cost scales with file size:
 
-| Messages | File size | Load time | Query time |
-|----------|-----------|-----------|------------|
-| 1K | 23 KB | 8 ms | 1 ms |
-| 10K | 220 KB | 90 ms | 1–3 ms |
-| 100K | 2.2 MB | 0.7 s | 1–5 ms |
-| 500K | 11 MB | 3.9 s | 2–9 ms |
+| Messages | File size | Load time | Memory | Query time |
+|----------|-----------|-----------|--------|------------|
+| 1K | 23 KB | 8 ms | < 1 MB | 1 ms |
+| 10K | 220 KB | 90 ms | 0.5 MB | 1–3 ms |
+| 100K | 2.2 MB | 0.7 s | 5 MB | 1–5 ms |
+| 500K | 11 MB | 3.9 s | 23 MB | 2–9 ms |
+| 1M | 23 MB | 8 s | 46 MB | 2–13 ms |
+| 2M | 48 MB | 18 s | 92 MB | 2–22 ms |
 
-*Measured on Apple M4 with JSON-encoded messages, 5 fields per message. Load times include full message decoding and DuckDB registration. Query times are median across aggregation, filter, and window function queries.*
+*Measured on Apple M4 with JSON-encoded messages, 5 fields per message. Query times are median across aggregation, filter, and window function queries. Memory is the DuckDB in-memory footprint (default budget: 2 GB).*
 
 > **Tip:** use `topics` and `start_time`/`end_time` filters on `load_recording` to load only what you need.
 
