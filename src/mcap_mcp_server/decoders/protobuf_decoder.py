@@ -130,7 +130,7 @@ def _walk_pb_descriptor(descriptor: Any, fields: list[FieldInfo], max_depth: int
     for field in descriptor.fields:
         full_name = f"{prefix}{separator}{field.name}" if prefix else field.name
         label = getattr(field, "label", None)
-        if label == FieldDescriptor.LABEL_REPEATED:
+        if label is not None and int(label) == FieldDescriptor.LABEL_REPEATED:
             fields.append(FieldInfo(name=full_name, type="VARCHAR"))
         elif field.type == FieldDescriptor.TYPE_MESSAGE and depth < max_depth - 1:
             _walk_pb_descriptor(
