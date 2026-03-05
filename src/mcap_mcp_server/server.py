@@ -58,7 +58,7 @@ def create_server(config: ServerConfig) -> FastMCP:
     @mcp.tool(
         name="list_recordings",
         description=(
-            "Discover available MCAP recording files (fast — reads metadata only). "
+            "Discover available MCAP recording files. Does not require loading. "
             "Returns file names, sizes, durations, channel lists, and message counts. "
             "Use this first to see what data is available before loading. "
             "By default scans the project directory; pass an absolute 'path' to "
@@ -81,7 +81,7 @@ def create_server(config: ServerConfig) -> FastMCP:
         name="get_recording_info",
         description=(
             "Get full metadata, channel details, and attachment list for a "
-            "specific MCAP recording file (fast — reads metadata only). "
+            "specific MCAP recording file. Does not require loading. "
             "Use this for detailed inspection before loading data."
         ),
     )
@@ -117,7 +117,7 @@ def create_server(config: ServerConfig) -> FastMCP:
         name="get_schema",
         description=(
             "Inspect the SQL schema for a recording: topic names, table names, "
-            "column names and DuckDB types (fast — reads metadata only). "
+            "column names and DuckDB types. Does not require loading. "
             "Use this to plan SQL queries before running them. "
             "Returns a sql_hint with JOIN guidance."
         ),
@@ -157,10 +157,11 @@ def create_server(config: ServerConfig) -> FastMCP:
     @mcp.tool(
         name="load_recording",
         description=(
-            "Decode an MCAP file and load its data into DuckDB for SQL querying "
-            "(slow — decodes all messages). You must call this before running "
-            "queries. Optionally filter by topics or time range to reduce load "
-            "time, and set an alias for multi-recording comparison."
+            "Decode an MCAP file and load its data into DuckDB for SQL querying. "
+            "This decodes all messages and may take seconds to tens of seconds "
+            "depending on file size. You must call this before running queries. "
+            "Optionally filter by topics or time range to reduce load time, "
+            "and set an alias for multi-recording comparison."
         ),
     )
     def load_recording(

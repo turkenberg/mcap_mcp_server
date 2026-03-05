@@ -22,8 +22,6 @@ Add to `.cursor/mcp.json` (or `claude_desktop_config.json` for Claude Desktop):
 
 That's it. No install, no database, no API keys. Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
----
-
 ## Usage
 
 Just talk to your LLM:
@@ -32,18 +30,20 @@ Just talk to your LLM:
 - *"Load the battery data and find all moments where voltage dropped below 22V"*
 - *"Correlate IMU acceleration with motor current using an ASOF JOIN"*
 - *"Compare average battery voltage across my last 5 runs"*
-- *"What version of mcap-mcp-server am I running?"*
+- *"What version of mcap-mcp-server am I running? Update it"*
 
 ### Tools
 
-| Tool | Speed | What it does |
-|------|-------|-------------|
-| `list_recordings` | fast | Find MCAP files in your project (or any path) |
-| `get_recording_info` | fast | Metadata, channels, attachments for a file |
-| `get_schema` | fast | SQL table names & column types — for query planning |
-| `load_recording` | **slow** | Decode all messages into DuckDB (required before query) |
-| `query` | fast | Run SQL (full DuckDB — including ASOF JOIN) |
-| `get_version` | fast | Server version, available decoders, upgrade command |
+| Tool | Needs loading | What it does |
+|------|:---:|-------------|
+| `list_recordings` | no | Find MCAP files in your project (or any path) |
+| `get_recording_info` | no | Metadata, channels, attachments for a file |
+| `get_schema` | no | SQL table names & column types — for query planning |
+| `load_recording` | — | **Decode MCAP into DuckDB** (must be called before `query`) |
+| `query` | yes | Run SQL (full DuckDB — including ASOF JOIN) |
+| `get_version` | no | Server version, available decoders, upgrade command |
+
+**[Project documentation](https://turkenberg.github.io/mcap_mcp_server/index.html)** — configuration, Docker, development setup, and architecture.
 
 ### Example SQL (under the hood)
 
@@ -65,6 +65,23 @@ SELECT 'run2', AVG(voltage) FROM r2_battery
 
 ---
 
+## Performance
+
+Metadata tools (`list_recordings`, `get_recording_info`, `get_schema`) return in **< 1 ms** regardless of file size. SQL queries execute in **1–10 ms** once data is loaded. The one-time `load_recording` cost scales with file size:
+
+| Messages | File size | Load time | Query time |
+|----------|-----------|-----------|------------|
+| 1K | 23 KB | 8 ms | 1 ms |
+| 10K | 220 KB | 90 ms | 1–3 ms |
+| 100K | 2.2 MB | 0.7 s | 1–5 ms |
+| 500K | 11 MB | 3.9 s | 2–9 ms |
+
+*Measured on Apple M4 with JSON-encoded messages, 5 fields per message. Load times include full message decoding and DuckDB registration. Query times are median across aggregation, filter, and window function queries.*
+
+> **Tip:** use `topics` and `start_time`/`end_time` filters on `load_recording` to load only what you need.
+
+---
+
 ## Update
 
 ```bash
@@ -73,15 +90,9 @@ uvx mcap-mcp-server[all] --upgrade
 
 Or ask your LLM — the `get_version` tool returns the running version and the upgrade command.
 
----
-
 ## Supported Encodings
 
 JSON built-in. Protobuf, ROS 1, ROS 2, FlatBuffers via `[all]` (or install individually: `[protobuf]`, `[ros1]`, `[ros2]`, `[flatbuffers]`).
-
----
-
-**[Full documentation](https://turkenberg.github.io/mcap_mcp_server/index.html)** — configuration, Docker, development setup, and architecture.
 
 ## License
 
