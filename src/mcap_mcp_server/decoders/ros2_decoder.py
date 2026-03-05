@@ -83,11 +83,17 @@ class Ros2Decoder:
 
 
 def _namespace_to_dict(obj: Any) -> dict[str, Any]:
-    """Convert a SimpleNamespace (or nested) to a plain dict recursively."""
-    if isinstance(obj, SimpleNamespace):
-        d = vars(obj)
-    elif isinstance(obj, dict):
+    """Convert a SimpleNamespace (or nested) to a plain dict recursively.
+
+    Handles __slots__-based objects returned by mcap_ros2 dynamic classes
+    (which inherit from SimpleNamespace but store values in __slots__).
+    """
+    if isinstance(obj, dict):
         d = obj
+    elif hasattr(obj, "__slots__") and not isinstance(obj, type):
+        d = {s.lstrip("_"): getattr(obj, s, None) for s in obj.__slots__}
+    elif isinstance(obj, SimpleNamespace):
+        d = vars(obj)
     elif hasattr(obj, "__dict__"):
         d = obj.__dict__
     else:
@@ -96,11 +102,17 @@ def _namespace_to_dict(obj: Any) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in d.items():
         if isinstance(value, (SimpleNamespace, dict)) or (
+            hasattr(value, "__slots__") and not isinstance(value, (str, bytes, int, float, bool))
+        ) or (
             hasattr(value, "__dict__") and not isinstance(value, (str, bytes, int, float, bool))
         ):
             result[key] = _namespace_to_dict(value)
         elif isinstance(value, (list, tuple)):
-            if value and (isinstance(value[0], SimpleNamespace) or hasattr(value[0], "__dict__")):
+            if value and (
+                isinstance(value[0], SimpleNamespace)
+                or hasattr(value[0], "__slots__")
+                or hasattr(value[0], "__dict__")
+            ):
                 result[key] = [_namespace_to_dict(v) for v in value]
             else:
                 result[key] = list(value)
