@@ -1,9 +1,9 @@
-# mcap-mcp-server
+# MCAP MCP Server
+
+**Query your robot's [MCAP](https://mcap.dev) recordings with SQL — straight from your LLM.**
 
 [![codecov](https://codecov.io/gh/turkenberg/mcap_mcp_server/graph/badge.svg)](https://codecov.io/gh/turkenberg/mcap_mcp_server)
 [![License](https://img.shields.io/github/license/turkenberg/mcap_mcp_server)](https://github.com/turkenberg/mcap_mcp_server/blob/master/LICENSE)
-
-**Query your robot's [MCAP](https://mcap.dev) recordings with SQL — straight from your LLM.**
 
 ## Setup
 
@@ -20,7 +20,8 @@ Add to `.cursor/mcp.json` (or `claude_desktop_config.json` for Claude Desktop):
 }
 ```
 
-That's it. No install, no database, no API keys. Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).
+No install, no database, no API keys. Requires [uv](https://docs.astral.sh/uv/getting-started/installation/).
+
 
 ## Usage
 
@@ -32,7 +33,8 @@ Just talk to your LLM:
 - *"Compare average battery voltage across my last 5 runs"*
 - *"What version of mcap-mcp-server am I running? Update it"*
 
-### Tools
+
+## Tools
 
 | Tool | Needs loading | What it does |
 |------|:---:|-------------|
@@ -45,7 +47,8 @@ Just talk to your LLM:
 
 **[Project documentation](https://turkenberg.github.io/mcap_mcp_server/index.html)** — configuration, Docker, development setup, and architecture.
 
-### Example SQL (under the hood)
+
+## Example SQL (under the hood)
 
 ```sql
 -- Time-windowed stats
@@ -63,7 +66,6 @@ UNION ALL
 SELECT 'run2', AVG(voltage) FROM r2_battery
 ```
 
----
 
 ## Performance
 
@@ -82,7 +84,6 @@ Metadata tools (`list_recordings`, `get_recording_info`, `get_schema`) return in
 
 > **Tip:** use `topics` and `start_time`/`end_time` filters on `load_recording` to load only what you need.
 
----
 
 ## Update
 
@@ -92,9 +93,6 @@ uvx mcap-mcp-server[all] --upgrade
 
 Or ask your LLM — the `get_version` tool returns the running version and the upgrade command.
 
-## Supported Encodings
-
-JSON built-in. Protobuf, ROS 1, ROS 2, FlatBuffers via `[all]` (or install individually: `[protobuf]`, `[ros1]`, `[ros2]`, `[flatbuffers]`).
 
 ## License
 
