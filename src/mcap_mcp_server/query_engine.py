@@ -55,6 +55,7 @@ class QueryEngine:
         self._table_memory: dict[str, int] = {}  # table_name -> bytes
         # group -> list of table names, ordered by insertion time (LRU)
         self._groups: OrderedDict[str, list[str]] = OrderedDict()
+        self._last_evicted: list[str] = []
         self._configure_safety()
 
     def _configure_safety(self) -> None:
@@ -104,8 +105,15 @@ class QueryEngine:
         ):
             oldest_group, tables = self._groups.popitem(last=False)
             for t in list(tables):
+                self._last_evicted.append(t)
                 self._do_unregister(t)
             logger.info("LRU-evicted group %r (%d tables)", oldest_group, len(tables))
+
+    def drain_evicted(self) -> list[str]:
+        """Return and clear the list of tables evicted since last drain."""
+        evicted = self._last_evicted
+        self._last_evicted = []
+        return evicted
 
     def unregister(self, name: str) -> None:
         self._do_unregister(name)

@@ -116,6 +116,42 @@ class TestQuery:
         )
         assert result["row_count"] > 0
 
+    def test_missing_table_returns_hint(self, mcp_server):
+        load_fn = _get_tool_fn(mcp_server, "load_recording")
+        load_fn(file="session_001.mcap")
+
+        query_fn = _get_tool_fn(mcp_server, "query")
+        result = json.loads(query_fn(sql="SELECT * FROM gps"))
+        assert "error" in result
+        assert "hint" in result
+        assert "load_recording" in result["hint"]
+        assert "loaded_tables" in result
+        assert "battery" in result["loaded_tables"]
+
+
+class TestLoadRecordingMemoryInfo:
+    def test_memory_budget_in_response(self, mcp_server):
+        load_fn = _get_tool_fn(mcp_server, "load_recording")
+        result = json.loads(load_fn(file="session_001.mcap"))
+        assert "memory_used_mb" in result
+        assert "memory_budget_mb" in result
+        assert result["memory_budget_mb"] == 2048
+
+    def test_eviction_warning(self, tmp_path: Path):
+        from tests.conftest import create_simple_mcap
+
+        create_simple_mcap(tmp_path / "big1.mcap", num_messages=5000)
+        create_simple_mcap(tmp_path / "big2.mcap", num_messages=5000)
+
+        config = ServerConfig(data_dir=tmp_path, max_memory_mb=0)
+        server = create_server(config)
+        load_fn = _get_tool_fn(server, "load_recording")
+
+        load_fn(file="big1.mcap")
+        result = json.loads(load_fn(file="big2.mcap"))
+        assert "evicted_tables" in result
+        assert "eviction_warning" in result
+
 
 def _get_tool_fn(server, name: str):
     """Extract a tool's callable from the FastMCP server by name."""

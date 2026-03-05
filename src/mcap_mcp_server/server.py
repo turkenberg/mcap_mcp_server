@@ -271,6 +271,8 @@ def create_server(config: ServerConfig) -> FastMCP:
         total_memory_bytes = 0
         load_group = alias or Path(file_path).name
 
+        engine.drain_evicted()
+
         for topic, cols in topic_columns.items():
             table_name = topic_to_table_name(topic, alias)
             df = pd.DataFrame(cols)
@@ -286,7 +288,11 @@ def create_server(config: ServerConfig) -> FastMCP:
 
         load_time = time.monotonic() - load_start
 
-        result = {
+        evicted = engine.drain_evicted()
+        memory_budget_mb = config.max_memory_mb
+        memory_used_mb = round(engine.total_memory_bytes / (1024 * 1024), 1)
+
+        result: dict[str, Any] = {
             "status": "loaded",
             "file": Path(file_path).name,
             "alias": alias,
@@ -295,8 +301,16 @@ def create_server(config: ServerConfig) -> FastMCP:
             "skipped_reason": "no decoder available or binary blob" if skipped_topics else None,
             "total_rows": total_rows,
             "memory_mb": round(total_memory_bytes / (1024 * 1024), 1),
+            "memory_used_mb": memory_used_mb,
+            "memory_budget_mb": memory_budget_mb,
             "load_time_s": round(load_time, 1),
         }
+        if evicted:
+            result["evicted_tables"] = sorted(set(evicted))
+            result["eviction_warning"] = (
+                "Memory budget exceeded. Previously loaded tables were evicted "
+                "to make room. Use topic and time filters to reduce memory usage."
+            )
         return json.dumps(result, indent=2)
 
     @mcp.tool(
@@ -304,7 +318,8 @@ def create_server(config: ServerConfig) -> FastMCP:
         description=(
             "Execute a SQL query against loaded MCAP data. Supports full DuckDB SQL "
             "including JOINs, GROUP BY, window functions, and ASOF JOIN for "
-            "time-series correlation. Data must be loaded first via load_recording."
+            "time-series correlation. Data must be loaded first via load_recording. "
+            "If a table is missing, call load_recording with the needed topic."
         ),
     )
     def query(
@@ -316,6 +331,15 @@ def create_server(config: ServerConfig) -> FastMCP:
             result = engine.execute(sql, limit=limit)
         except ValueError as e:
             result = {"error": str(e)}
+
+        if "error" in result and "does not exist" in str(result["error"]):
+            loaded = engine.list_tables()
+            result["loaded_tables"] = list(loaded.keys()) if loaded else []
+            result["hint"] = (
+                "Table not found. Call load_recording to load the needed topic. "
+                "Use get_schema to see available topics in a file."
+            )
+
         return json.dumps(result, default=_json_default, indent=2)
 
     @mcp.tool(
