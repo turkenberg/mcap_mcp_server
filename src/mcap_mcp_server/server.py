@@ -58,9 +58,9 @@ def create_server(config: ServerConfig) -> FastMCP:
     @mcp.tool(
         name="list_recordings",
         description=(
-            "Discover available MCAP recording files. Returns file names, sizes, "
-            "durations, channel lists, and message counts. Use this first to see "
-            "what data is available before loading. "
+            "Discover available MCAP recording files (fast — reads metadata only). "
+            "Returns file names, sizes, durations, channel lists, and message counts. "
+            "Use this first to see what data is available before loading. "
             "By default scans the project directory; pass an absolute 'path' to "
             "scan any directory on the filesystem."
         ),
@@ -81,8 +81,8 @@ def create_server(config: ServerConfig) -> FastMCP:
         name="get_recording_info",
         description=(
             "Get full metadata, channel details, and attachment list for a "
-            "specific MCAP recording file. Use this for detailed inspection "
-            "before loading data."
+            "specific MCAP recording file (fast — reads metadata only). "
+            "Use this for detailed inspection before loading data."
         ),
     )
     def get_recording_info(file: str) -> str:
@@ -117,8 +117,9 @@ def create_server(config: ServerConfig) -> FastMCP:
         name="get_schema",
         description=(
             "Inspect the SQL schema for a recording: topic names, table names, "
-            "column names and DuckDB types. Use this to plan SQL queries before "
-            "running them. Returns a sql_hint with JOIN guidance."
+            "column names and DuckDB types (fast — reads metadata only). "
+            "Use this to plan SQL queries before running them. "
+            "Returns a sql_hint with JOIN guidance."
         ),
     )
     def get_schema(
@@ -156,9 +157,10 @@ def create_server(config: ServerConfig) -> FastMCP:
     @mcp.tool(
         name="load_recording",
         description=(
-            "Decode an MCAP file and load its data into DuckDB for SQL querying. "
-            "You must call this before running queries. Optionally filter by topics "
-            "or time range, and set an alias for multi-recording comparison."
+            "Decode an MCAP file and load its data into DuckDB for SQL querying "
+            "(slow — decodes all messages). You must call this before running "
+            "queries. Optionally filter by topics or time range to reduce load "
+            "time, and set an alias for multi-recording comparison."
         ),
     )
     def load_recording(

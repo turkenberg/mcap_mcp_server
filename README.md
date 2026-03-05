@@ -37,14 +37,14 @@ Just talk to your LLM:
 
 ### Tools
 
-| Tool | What it does |
-|------|-------------|
-| `list_recordings` | Find MCAP files in your project (or any path) |
-| `get_recording_info` | Metadata, channels, attachments for a file |
-| `get_schema` | SQL table names & column types — for query planning |
-| `load_recording` | Decode MCAP data into DuckDB |
-| `query` | Run SQL (full DuckDB — including ASOF JOIN) |
-| `get_version` | Server version, available decoders, upgrade command |
+| Tool | Speed | What it does |
+|------|-------|-------------|
+| `list_recordings` | fast | Find MCAP files in your project (or any path) |
+| `get_recording_info` | fast | Metadata, channels, attachments for a file |
+| `get_schema` | fast | SQL table names & column types — for query planning |
+| `load_recording` | **slow** | Decode all messages into DuckDB (required before query) |
+| `query` | fast | Run SQL (full DuckDB — including ASOF JOIN) |
+| `get_version` | fast | Server version, available decoders, upgrade command |
 
 ### Example SQL (under the hood)
 
@@ -68,53 +68,11 @@ SELECT 'run2', AVG(voltage) FROM r2_battery
 
 ## Supported Encodings
 
-| Encoding | Install extra |
-|----------|--------------|
-| JSON | Built-in |
-| Protobuf | `[protobuf]` |
-| ROS 1 | `[ros1]` |
-| ROS 2 (CDR) | `[ros2]` |
-| FlatBuffers | `[flatbuffers]` |
-| All | `[all]` |
+JSON built-in. Protobuf, ROS 1, ROS 2, FlatBuffers via `[all]` (or install individually: `[protobuf]`, `[ros1]`, `[ros2]`, `[flatbuffers]`).
 
-> The config above uses `[all]`. For pip: `pip install mcap-mcp-server[all]`
+---
 
-## Configuration (Optional)
-
-Defaults work for most setups. Tune if needed:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `MCAP_DATA_DIR` | `.` | Root directory to scan for MCAP files |
-| `MCAP_RECURSIVE` | `true` | Scan subdirectories |
-| `MCAP_MAX_MEMORY_MB` | `2048` | Max memory for loaded data (LRU eviction) |
-| `MCAP_QUERY_TIMEOUT_S` | `30` | SQL query timeout |
-| `MCAP_DEFAULT_ROW_LIMIT` | `1000` | Default result row limit |
-| `MCAP_MAX_ROW_LIMIT` | `10000` | Max allowed row limit |
-| `MCAP_TRANSPORT` | `stdio` | `stdio` or `sse` |
-
-## Docker
-
-```bash
-docker run -d \
-  -v /data/recordings:/data:ro \
-  -e MCAP_DATA_DIR=/data \
-  -e MCAP_TRANSPORT=sse \
-  -p 8080:8080 \
-  ghcr.io/turkenberg/mcap-mcp-server:latest
-```
-
-## Development
-
-```bash
-git clone https://github.com/turkenberg/mcap_mcp_server.git
-cd mcap_mcp_server
-git submodule update --init
-pip install -e ".[dev]"
-pytest
-```
-
-**[Full documentation](https://turkenberg.github.io/mcap_mcp_server/index.html)**
+**[Full documentation](https://turkenberg.github.io/mcap_mcp_server/index.html)** — configuration, Docker, development setup, and architecture.
 
 ## License
 
