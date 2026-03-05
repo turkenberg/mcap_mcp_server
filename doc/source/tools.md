@@ -38,7 +38,7 @@ Decode an MCAP file and register its data as DuckDB tables. Must be called befor
 | `end_time` | string | No | ISO 8601 or epoch microseconds — end of time window |
 | `downsample` | integer | No | Keep every Nth message |
 
-Returns table names, row counts, column counts, and load time. Topics without a matching decoder are skipped and listed.
+Returns table names, row counts, column counts, load time, memory usage (`memory_used_mb`, `memory_budget_mb`), and any `evicted_tables` if the memory budget was exceeded. Topics without a matching decoder are skipped and listed.
 
 ### Table naming
 
@@ -65,7 +65,7 @@ Execute SQL against loaded data. Full DuckDB SQL is supported, including `ASOF J
 | `sql` | string | Yes | SQL query |
 | `limit` | integer | No | Override row limit (default: 1000, max: 10000) |
 
-Returns columns, types, rows, row count, truncation flag, and execution time.
+Returns columns, types, rows, row count, truncation flag, and execution time. If a referenced table does not exist, the error response includes `loaded_tables` and a `hint` to guide the LLM toward loading the correct recording first.
 
 ## get_version
 
