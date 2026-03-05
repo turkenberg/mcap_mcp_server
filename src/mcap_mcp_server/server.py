@@ -160,8 +160,10 @@ def create_server(config: ServerConfig) -> FastMCP:
             "Decode an MCAP file and load its data into DuckDB for SQL querying. "
             "This decodes all messages and may take seconds to tens of seconds "
             "depending on file size. You must call this before running queries. "
-            "Optionally filter by topics or time range to reduce load time, "
-            "and set an alias for multi-recording comparison."
+            "For large files, use 'topics' to load only the topics you need and "
+            "'start_time'/'end_time' to narrow the time window — this significantly "
+            "reduces both load time and memory usage. "
+            "Set an alias for multi-recording comparison."
         ),
     )
     def load_recording(
