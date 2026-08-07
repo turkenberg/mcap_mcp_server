@@ -447,6 +447,112 @@ def _flatbuffer_encode_battery(voltage: float, current: float, percentage: float
     return bytes(builder.Output())
 
 
+@pytest.fixture
+def bt_snapshot_mcap(tmp_path: Path) -> Path:
+    """MCAP file with a BehaviorTreeSnapshot topic containing a nodes array."""
+    p = tmp_path / "bt_snapshot.mcap"
+    create_bt_snapshot_mcap(p)
+    return p
+
+
+def create_bt_snapshot_mcap(path: Path, num_snapshots: int = 3) -> Path:
+    """Write a JSON-encoded MCAP file with a BT snapshot topic.
+
+    Each snapshot carries a ``nodes`` array (uid, name, type, status) mimicking
+    ``nav2_msgs/msg/BehaviorTreeSnapshot``.  A companion ``/bt_transition``
+    topic is included so JOIN tests are possible.
+    """
+    snapshot_schema_data = json.dumps(
+        {
+            "type": "object",
+            "properties": {
+                "nodes": {
+                    "type": "array",
+                    "description": "Flat list of BT node statuses",
+                },
+            },
+        }
+    ).encode()
+
+    transition_schema_data = json.dumps(
+        {
+            "type": "object",
+            "properties": {
+                "node_uid": {"type": "integer"},
+                "previous_status": {"type": "integer"},
+                "current_status": {"type": "integer"},
+            },
+        }
+    ).encode()
+
+    nodes = [
+        {"node_uid": 1, "node_name": "NavigateToPose", "node_type": "Action", "status": 2},
+        {"node_uid": 2, "node_name": "ComputePathToPose", "node_type": "Action", "status": 2},
+        {"node_uid": 3, "node_name": "FollowPath", "node_type": "Action", "status": 3},
+        {"node_uid": 4, "node_name": "RecoveryNode", "node_type": "Control", "status": 1},
+        {"node_uid": 5, "node_name": "RateController", "node_type": "Decorator", "status": 2},
+    ]
+
+    base_time_ns = 1_700_000_000_000_000_000
+
+    with open(path, "wb") as f:
+        writer = Writer(f)
+        writer.start()
+
+        snap_sid = writer.register_schema(
+            name="nav2_msgs/msg/BehaviorTreeSnapshot",
+            encoding="jsonschema",
+            data=snapshot_schema_data,
+        )
+        snap_ch = writer.register_channel(
+            topic="/bt_snapshot",
+            message_encoding="json",
+            schema_id=snap_sid,
+        )
+
+        trans_sid = writer.register_schema(
+            name="nav2_msgs/msg/BtTransition",
+            encoding="jsonschema",
+            data=transition_schema_data,
+        )
+        trans_ch = writer.register_channel(
+            topic="/bt_transition",
+            message_encoding="json",
+            schema_id=trans_sid,
+        )
+
+        # Write snapshot messages
+        for i in range(num_snapshots):
+            ts = base_time_ns + i * 1_000_000_000  # 1 s apart
+            msg = {"nodes": nodes}
+            writer.add_message(
+                channel_id=snap_ch,
+                log_time=ts,
+                data=json.dumps(msg).encode(),
+                publish_time=ts,
+            )
+
+        # Write some transition messages referencing node uids
+        transitions = [
+            {"node_uid": 1, "previous_status": 1, "current_status": 2},
+            {"node_uid": 3, "previous_status": 2, "current_status": 3},
+            {"node_uid": 1, "previous_status": 2, "current_status": 3},
+            {"node_uid": 2, "previous_status": 1, "current_status": 2},
+        ]
+        for i, t in enumerate(transitions):
+            ts = base_time_ns + i * 500_000_000
+            writer.add_message(
+                channel_id=trans_ch,
+                log_time=ts,
+                data=json.dumps(t).encode(),
+                publish_time=ts,
+            )
+
+        writer.finish()
+
+    return path
+
+
 def create_flatbuffer_mcap(path: Path, num_messages: int = 50) -> Path:
     """Write a FlatBuffer-encoded MCAP file with a /battery topic."""
     bfbs = _get_flatbuffer_bfbs()

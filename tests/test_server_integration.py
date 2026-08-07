@@ -144,6 +144,76 @@ class TestLoadRecordingMemoryInfo:
             ServerConfig(max_memory_mb=32)
 
 
+class TestBtNodeNames:
+    """Tests for the auto-unnested bt_node_names lookup table."""
+
+    @pytest.fixture
+    def bt_server(self, bt_snapshot_mcap: Path):
+        config = ServerConfig(data_dir=bt_snapshot_mcap.parent)
+        return create_server(config)
+
+    def test_bt_node_names_table_created(self, bt_server):
+        load_fn = _get_tool_fn(bt_server, "load_recording")
+        result = json.loads(load_fn(file="bt_snapshot.mcap"))
+        assert result["status"] == "loaded"
+        assert "bt_node_names" in result["tables"]
+        assert result["tables"]["bt_node_names"]["rows"] == 5
+        assert result["tables"]["bt_node_names"]["columns"] == 3
+
+    def test_bt_node_names_queryable(self, bt_server):
+        load_fn = _get_tool_fn(bt_server, "load_recording")
+        load_fn(file="bt_snapshot.mcap")
+
+        query_fn = _get_tool_fn(bt_server, "query")
+        result = json.loads(
+            query_fn(sql="SELECT node_uid, node_name, node_type FROM bt_node_names ORDER BY node_uid")
+        )
+        assert result["row_count"] == 5
+        assert result["columns"] == ["node_uid", "node_name", "node_type"]
+        assert result["rows"][0][0] == 1
+        assert result["rows"][0][1] == "NavigateToPose"
+        assert result["rows"][0][2] == "Action"
+
+    def test_bt_node_names_join_with_transitions(self, bt_server):
+        load_fn = _get_tool_fn(bt_server, "load_recording")
+        load_fn(file="bt_snapshot.mcap")
+
+        query_fn = _get_tool_fn(bt_server, "query")
+        result = json.loads(
+            query_fn(
+                sql=(
+                    "SELECT n.node_name, n.node_type, "
+                    "COUNT(*) as transitions, "
+                    "SUM(CASE WHEN t.current_status = 3 THEN 1 ELSE 0 END) as failures "
+                    "FROM bt_transition t "
+                    "JOIN bt_node_names n ON t.node_uid = n.node_uid "
+                    "GROUP BY n.node_name, n.node_type "
+                    "ORDER BY failures DESC"
+                )
+            )
+        )
+        assert result["row_count"] > 0
+        row_names = [r[0] for r in result["rows"]]
+        assert "NavigateToPose" in row_names
+
+    def test_bt_node_names_with_alias(self, bt_server):
+        load_fn = _get_tool_fn(bt_server, "load_recording")
+        result = json.loads(load_fn(file="bt_snapshot.mcap", alias="r1"))
+        assert "r1_bt_node_names" in result["tables"]
+
+        query_fn = _get_tool_fn(bt_server, "query")
+        q_result = json.loads(
+            query_fn(sql="SELECT COUNT(*) FROM r1_bt_node_names")
+        )
+        assert q_result["rows"][0][0] == 5
+
+    def test_no_bt_node_names_without_snapshot(self, mcp_server):
+        """Regular recordings without BT snapshot should not create the table."""
+        load_fn = _get_tool_fn(mcp_server, "load_recording")
+        result = json.loads(load_fn(file="session_001.mcap"))
+        assert "bt_node_names" not in result["tables"]
+
+
 def _get_tool_fn(server, name: str):
     """Extract a tool's callable from the FastMCP server by name."""
     for tool in server._tool_manager._tools.values():

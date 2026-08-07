@@ -281,6 +281,10 @@ def create_server(config: ServerConfig) -> FastMCP:
             tables_info[table_name] = {"rows": row_count, "columns": len(df.columns)}
             total_rows += row_count
 
+        _maybe_register_bt_node_names(
+            engine, decodable_channels, topic_columns, alias, load_group, tables_info
+        )
+
         _register_metadata_table(engine, summary, alias, group=load_group)
 
         if alias:
@@ -452,6 +456,78 @@ def _register_recordings_entry(
     except Exception:
         pass
     engine.register_dataframe("_recordings", df)
+
+
+_BT_SNAPSHOT_SCHEMA = "nav2_msgs/msg/BehaviorTreeSnapshot"
+
+
+def _maybe_register_bt_node_names(
+    engine: QueryEngine,
+    decodable_channels: dict[int, dict],
+    topic_columns: dict[str, dict[str, list]],
+    alias: str | None,
+    group: str,
+    tables_info: dict[str, dict[str, int]],
+) -> None:
+    """Unnest nodes from the last BehaviorTreeSnapshot into a bt_node_names table."""
+    # Find the snapshot topic
+    snapshot_topic: str | None = None
+    for info in decodable_channels.values():
+        if info["schema_name"] == _BT_SNAPSHOT_SCHEMA:
+            snapshot_topic = info["topic"]
+            break
+
+    if snapshot_topic is None or snapshot_topic not in topic_columns:
+        return
+
+    cols = topic_columns[snapshot_topic]
+    nodes_col = cols.get("nodes")
+    if not nodes_col:
+        return
+
+    # Take the last snapshot's nodes (most recent)
+    last_nodes_raw = nodes_col[-1]
+    if last_nodes_raw is None:
+        return
+
+    # Parse JSON if it was serialized by flatten_dict
+    if isinstance(last_nodes_raw, str):
+        try:
+            nodes_list = json.loads(last_nodes_raw)
+        except (json.JSONDecodeError, TypeError):
+            return
+    elif isinstance(last_nodes_raw, list):
+        nodes_list = last_nodes_raw
+    else:
+        return
+
+    if not isinstance(nodes_list, list) or not nodes_list:
+        return
+
+    rows = []
+    for node in nodes_list:
+        if not isinstance(node, dict):
+            continue
+        # Support both ROS2 field names (node_uid, node_name, node_type)
+        # and short aliases (uid, name, type)
+        uid = node.get("node_uid") or node.get("uid")
+        name = node.get("node_name") or node.get("name")
+        ntype = node.get("node_type") or node.get("type")
+        if uid is not None and name is not None:
+            rows.append(
+                {"node_uid": int(uid), "node_name": str(name), "node_type": str(ntype or "")}
+            )
+
+    if not rows:
+        return
+
+    table_name = f"{alias}_bt_node_names" if alias else "bt_node_names"
+    df = pd.DataFrame(rows)
+    # Force node_uid to uint16-compatible int
+    df["node_uid"] = df["node_uid"].astype("uint16")
+    row_count = engine.register_dataframe(table_name, df, group=group)
+    tables_info[table_name] = {"rows": row_count, "columns": len(df.columns)}
+    logger.info("Registered %s with %d nodes from last BT snapshot", table_name, row_count)
 
 
 def _json_default(obj: Any) -> Any:

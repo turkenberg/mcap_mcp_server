@@ -35,9 +35,11 @@ class DecoderRegistry:
 
     def _try_register_optional(self) -> None:
         """Auto-register optional decoders if their dependencies are installed."""
+        # Order matters: get_decoder returns the first match.
         optional_decoders = [
             ("mcap_mcp_server.decoders.protobuf_decoder", "ProtobufDecoder"),
             ("mcap_mcp_server.decoders.ros1_decoder", "Ros1Decoder"),
+            ("mcap_mcp_server.decoders.ros2_rosbags_decoder", "Ros2RosbagsDecoder"),
             ("mcap_mcp_server.decoders.ros2_decoder", "Ros2Decoder"),
             ("mcap_mcp_server.decoders.flatbuffer_decoder", "FlatBufferDecoder"),
         ]

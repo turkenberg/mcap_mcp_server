@@ -36,7 +36,7 @@ dependencies = [
 [project.optional-dependencies]
 protobuf = ["mcap-protobuf-support>=0.5.0", "protobuf>=4.0.0"]
 ros1 = ["mcap-ros1-support>=0.7.0"]
-ros2 = ["mcap-ros2-support>=0.5.0"]
+ros2 = ["mcap-ros2-support>=0.5.0", "rosbags>=0.10.0", "numpy>=1.24", "orjson>=3.9"]
 flatbuffers = ["flatbuffers>=23.0.0"]
 all = [
     "mcap-mcp-server[protobuf]",
@@ -63,6 +63,7 @@ mcap-mcp-server = "mcap_mcp_server.__main__:main"
 json = "mcap_mcp_server.decoders.json_decoder:JsonDecoder"
 protobuf = "mcap_mcp_server.decoders.protobuf_decoder:ProtobufDecoder"
 ros1 = "mcap_mcp_server.decoders.ros1_decoder:Ros1Decoder"
+ros2_rosbags = "mcap_mcp_server.decoders.ros2_rosbags_decoder:Ros2RosbagsDecoder"
 ros2 = "mcap_mcp_server.decoders.ros2_decoder:Ros2Decoder"
 flatbuffer = "mcap_mcp_server.decoders.flatbuffer_decoder:FlatBufferDecoder"
 

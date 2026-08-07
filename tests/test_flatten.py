@@ -22,12 +22,12 @@ class TestFlattenDict:
     def test_max_depth_serialises_deep_nesting(self):
         d = {"a": {"b": {"c": {"d": 42}}}}
         result = flatten_dict(d, max_depth=2)
-        assert result["a_b"] == json.dumps({"c": {"d": 42}})
+        assert json.loads(result["a_b"]) == {"c": {"d": 42}}
 
     def test_arrays_serialised_as_json(self):
         d = {"values": [1, 2, 3], "name": "test"}
         result = flatten_dict(d)
-        assert result["values"] == json.dumps([1, 2, 3])
+        assert json.loads(result["values"]) == [1, 2, 3]
         assert result["name"] == "test"
 
     def test_mixed_nesting(self):
@@ -40,7 +40,7 @@ class TestFlattenDict:
         assert result["header_stamp_sec"] == 10
         assert result["header_stamp_nsec"] == 500
         assert result["value"] == 42.0
-        assert result["tags"] == json.dumps(["a", "b"])
+        assert json.loads(result["tags"]) == ["a", "b"]
 
     def test_custom_separator(self):
         d = {"a": {"b": 1}}
